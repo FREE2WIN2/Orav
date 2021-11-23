@@ -1,0 +1,5 @@
+name: orav
+author: FREE2WIN
+version: 1.0
+main: de.logilutions.orav.OravPlugin
+api-version: 1.17
