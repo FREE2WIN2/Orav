@@ -2,21 +2,22 @@ package de.logilutions.orav.session;
 
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.util.MessageManager;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 
-import java.time.Duration;
+import java.util.function.Consumer;
 
 public class SessionRunnable implements Runnable{
     private final OravPlayer oravPlayer;
     private long remainingMillis;
     private long lastRun = System.currentTimeMillis();
     private final MessageManager messageManager;
+    private final Consumer<OravPlayer> onEnd;
 
-    public SessionRunnable(OravPlayer oravPlayer, long remainingMillis, MessageManager messageManager) {
+    public SessionRunnable(OravPlayer oravPlayer, long remainingMillis, MessageManager messageManager, Consumer<OravPlayer> onEnd) {
         this.oravPlayer = oravPlayer;
         this.remainingMillis = remainingMillis;
         this.messageManager = messageManager;
+        this.onEnd = onEnd;
     }
 
     @Override
@@ -48,18 +49,21 @@ public class SessionRunnable implements Runnable{
             messageManager.sendMessage(player,"Du hast nur noch %hc%10 Sekunden Spielzeit!");
         }
 
-        if(remainingMillis <= 10*1000 && lastRemaining > 10*1000){
+        if(remainingMillis <= 3*1000 && lastRemaining > 3*1000){
             messageManager.sendMessage(player,"Du hast nur noch %hc%3 Sekunden Spielzeit!");
         }
 
-        if(remainingMillis <= 10*1000 && lastRemaining > 10*1000){
+        if(remainingMillis <= 2*1000 && lastRemaining > 2*1000){
             messageManager.sendMessage(player,"Du hast nur noch %hc%2 Sekunden Spielzeit!");
         }
 
-        if(remainingMillis <= 10*1000 && lastRemaining > 10*1000){
+        if(remainingMillis <= 1000 && lastRemaining > 1000){
             messageManager.sendMessage(player,"Du hast nur noch %hc%1 Sekunde Spielzeit!");
         }
 
+        if(remainingMillis <= 0){
+            onEnd.accept(oravPlayer);
+        }
 
     }
 }

@@ -26,11 +26,6 @@ public class OravPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         super.onEnable();
-        try{
-            Class.forName("org.hibernate.jpa.HibernatePersistenceProvider");
-        }catch (Exception e){
-            e.printStackTrace();
-        }
         FileConfiguration config = getConfig();
         try {
             initDatabase(config);
@@ -41,15 +36,14 @@ public class OravPlugin extends JavaPlugin {
             return;
         }
 
-        this.messageManager = new MessageManager("§8[§aORAV§8] §7");
+        this.messageManager = new MessageManager();
         this.databaseHandler = new DatabaseHandler(databaseConnectionHolder);
         this.orav = databaseHandler.readOrav(config.getInt("current-orav"));
         this.oravPlayerManager = new OravPlayerManager(databaseHandler,orav);
 
-
-
-
+        initCommands();
     }
+
 
     private void initDatabase(FileConfiguration config) throws DatabaseConfigException {
         ConfigurationSection databaseSection = config.getConfigurationSection("database");
@@ -58,6 +52,9 @@ public class OravPlugin extends JavaPlugin {
         } else {
             databaseConnectionHolder = new DatabaseConnectionHolder(databaseSection);
         }
+    }
+    private void initCommands() {
+        getCommand("generatespawn").setExecutor(new SpawnGenerator(messageManager));
     }
 
     @Override

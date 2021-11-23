@@ -19,6 +19,8 @@ public class OravPlayer {
     private PlaySession currentSession;
     @Setter
     private boolean droppedOut;
+    @Setter
+    private boolean hasValidSession;
 
     public OravPlayer(Long id, OravTeam oravTeam, UUID uuid, boolean droppedOut) {
         this.id = id;
