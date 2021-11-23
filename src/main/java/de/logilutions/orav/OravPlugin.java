@@ -6,6 +6,7 @@ import de.logilutions.orav.exception.DatabaseConfigException;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.session.SessionObserver;
+import de.logilutions.orav.spawn.SpawnGenerator;
 import de.logilutions.orav.util.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

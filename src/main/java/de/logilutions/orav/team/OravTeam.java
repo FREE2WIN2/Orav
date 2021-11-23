@@ -13,10 +13,4 @@ public class OravTeam {
     private Long id;
     private String name;
     private TeamColor teamColor;
-
-    public OravTeam(Long id, String name, TeamColor teamColor) {
-        this.id = id;
-        this.name = name;
-        this.teamColor = teamColor;
-    }
 }
