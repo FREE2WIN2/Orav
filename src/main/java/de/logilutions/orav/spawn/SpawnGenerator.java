@@ -52,13 +52,13 @@ public class SpawnGenerator implements CommandExecutor {
     public boolean generate(Location center, int team_amount) {
         if (team_amount == 4) {
             center.add(7, 0, 0);
-            placeTeamSpawn(center, 1);
+            placeTeamSpawn(center, true);
             center.add(-14, 0, 0);
-            placeTeamSpawn(center, 1);
+            placeTeamSpawn(center, true);
             center.add(7, 0, 7);
-            placeTeamSpawn(center, 0);
+            placeTeamSpawn(center, false);
             center.add(0, 0, -14);
-            placeTeamSpawn(center, 0);
+            placeTeamSpawn(center, false);
 
             return true;
         } else {
@@ -66,36 +66,35 @@ public class SpawnGenerator implements CommandExecutor {
         }
     }
 
-    public void placeTeamSpawn(Location center, int rotation) {
+    public void placeTeamSpawn(Location center, boolean rotation) {
         int x = center.getBlockX();
         int y = center.getBlockY();
         int z = center.getBlockZ();
 
-        if (rotation == 0) {
-            this.world.getBlockAt(x-1, y, z).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x-2, y, z+1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x-2, y, z-1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x-3, y, z).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+1, y, z).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+2, y, z+1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+2, y, z-1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+3, y, z).setType(Material.OAK_SLAB);
+        if (!rotation) {
+            this.world.getBlockAt(x - 1, y, z).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x - 2, y, z + 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x - 2, y, z - 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x - 3, y, z).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 1, y, z).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 2, y, z + 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 2, y, z - 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 3, y, z).setType(Material.OAK_SLAB);
 
-            this.world.getBlockAt(x+2, y-1, z).setType(Material.AIR);
-            this.world.getBlockAt(x-2, y-1, z).setType(Material.AIR);
-        }
-        if (rotation == 1) {
-            this.world.getBlockAt(x, y, z-1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x-1, y, z-2).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+1, y, z-2).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x, y, z-3).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x, y, z+1).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x-1, y, z+2).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x+1, y, z+2).setType(Material.OAK_SLAB);
-            this.world.getBlockAt(x, y, z+3).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 2, y - 1, z).setType(Material.AIR);
+            this.world.getBlockAt(x - 2, y - 1, z).setType(Material.AIR);
+        } else {
+            this.world.getBlockAt(x, y, z - 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x - 1, y, z - 2).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 1, y, z - 2).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x, y, z - 3).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x, y, z + 1).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x - 1, y, z + 2).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x + 1, y, z + 2).setType(Material.OAK_SLAB);
+            this.world.getBlockAt(x, y, z + 3).setType(Material.OAK_SLAB);
 
-            this.world.getBlockAt(x, y-1, z+2).setType(Material.AIR);
-            this.world.getBlockAt(x, y-1, z-2).setType(Material.AIR);
+            this.world.getBlockAt(x, y - 1, z + 2).setType(Material.AIR);
+            this.world.getBlockAt(x, y - 1, z - 2).setType(Material.AIR);
         }
     }
 }
