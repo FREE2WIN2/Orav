@@ -262,7 +262,7 @@ public class MessageManager {
      * @param players A Collection of Player the Message is sent to
      * @param message The Message you sent to the Players
      */
-    public void broadcast(Collection<Player> players, String message) {
+    public void broadcast(Collection<? extends Player> players, String message) {
         broadcast(players, this.enablePrefix, null, new TextComponent(message));
     }
 
@@ -271,7 +271,7 @@ public class MessageManager {
      * @param enablePrefix Determine if the Prefix should be Shown
      * @param message      The Message you sent to the Players
      */
-    public void broadcast(Collection<Player> players, boolean enablePrefix, String message) {
+    public void broadcast(Collection<? extends Player> players, boolean enablePrefix, String message) {
         broadcast(players, enablePrefix, null, new TextComponent(message));
     }
 
@@ -280,7 +280,7 @@ public class MessageManager {
      * @param component  The Message {@link net.md_5.bungee.api.chat.BaseComponent} sent to the Player Normally an {@link net.md_5.bungee.api.chat.TextComponent}
      * @param components Additional {@link net.md_5.bungee.api.chat.BaseComponent} which are append with {@link net.md_5.bungee.api.chat.TextComponent#addExtra(BaseComponent)}
      */
-    public void broadcast(Collection<Player> players, BaseComponent component, BaseComponent... components) {
+    public void broadcast(Collection<? extends Player> players, BaseComponent component, BaseComponent... components) {
         for (BaseComponent baseComponent : components) {
             component.addExtra(baseComponent);
         }
@@ -293,7 +293,7 @@ public class MessageManager {
      * @param component    The Message {@link net.md_5.bungee.api.chat.BaseComponent} sent to the Player Normally an {@link net.md_5.bungee.api.chat.TextComponent}
      * @param components   Additional {@link net.md_5.bungee.api.chat.BaseComponent} which are append with {@link net.md_5.bungee.api.chat.TextComponent#addExtra(BaseComponent)}
      */
-    public void broadcast(Collection<Player> players, boolean enablePrefix, BaseComponent component, BaseComponent... components) {
+    public void broadcast(Collection<? extends Player> players, boolean enablePrefix, BaseComponent component, BaseComponent... components) {
         for (BaseComponent baseComponent : components) {
             component.addExtra(baseComponent);
         }
@@ -305,7 +305,7 @@ public class MessageManager {
      * @param message    The Message Broadcasted to all Player which have the needed Permission
      * @param permission The Permission an Player needs to see this Message
      */
-    public void broadcast(Collection<Player> players, String message, String permission) {
+    public void broadcast(Collection<? extends Player> players, String message, String permission) {
         broadcast(players, this.enablePrefix, permission, new TextComponent(message));
     }
 
@@ -315,7 +315,7 @@ public class MessageManager {
      * @param permission   The Permission an Player needs to see this Message
      * @param message      The Message Broadcasted to all Player which have the needed Permission
      */
-    public void broadcast(Collection<Player> players, boolean enablePrefix, String permission, String message) {
+    public void broadcast(Collection<? extends Player> players, boolean enablePrefix, String permission, String message) {
         broadcast(players, enablePrefix, permission, new TextComponent(message));
     }
 
@@ -325,7 +325,7 @@ public class MessageManager {
      * @param component  The Message {@link net.md_5.bungee.api.chat.BaseComponent} sent to the Player Normally an {@link net.md_5.bungee.api.chat.TextComponent}
      * @param components Additional {@link net.md_5.bungee.api.chat.BaseComponent} which are append with {@link net.md_5.bungee.api.chat.TextComponent#addExtra(BaseComponent)}
      */
-    public void broadcast(Collection<Player> players, String permission, BaseComponent component, BaseComponent... components) {
+    public void broadcast(Collection<? extends Player> players, String permission, BaseComponent component, BaseComponent... components) {
         for (BaseComponent baseComponent : components) {
             component.addExtra(baseComponent);
         }
@@ -339,7 +339,7 @@ public class MessageManager {
      * @param component    The Message {@link net.md_5.bungee.api.chat.BaseComponent} sent to the Player Normally an {@link net.md_5.bungee.api.chat.TextComponent}
      * @param components   Additional {@link net.md_5.bungee.api.chat.BaseComponent} which are append with {@link net.md_5.bungee.api.chat.TextComponent#addExtra(BaseComponent)}
      */
-    public void broadcast(Collection<Player> players, boolean enablePrefix, String permission, BaseComponent component, BaseComponent... components) {
+    public void broadcast(Collection<? extends Player> players, boolean enablePrefix, String permission, BaseComponent component, BaseComponent... components) {
         for (BaseComponent baseComponent : components) {
             component.addExtra(baseComponent);
         }
@@ -352,7 +352,7 @@ public class MessageManager {
      * @param permission   The Permission an Player needs to see this Message
      * @param message      No further description provided
      */
-    public void broadcast(Collection<Player> players, boolean enablePrefix, String permission, BaseComponent message) {
+    public void broadcast(Collection<? extends Player> players, boolean enablePrefix, String permission, BaseComponent message) {
         TextComponent component = buildComponent(enablePrefix, message);
 
         players.forEach(player -> {
