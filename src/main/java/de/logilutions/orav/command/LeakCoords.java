@@ -31,8 +31,8 @@ public class LeakCoords implements CommandExecutor {
 
         Player player = Bukkit.getPlayer(args[0]);
         if (player == null) {
-                this.messageManager.sendMessage(sender, "%ec%Bitte einen korrekten Spielernamen eingeben!");
-                return true;
+            this.messageManager.sendMessage(sender, "%ec%Bitte einen korrekten Spielernamen eingeben!");
+            return true;
         }
 
         leakCoords(player);
@@ -46,7 +46,8 @@ public class LeakCoords implements CommandExecutor {
         int y = location.getBlockY();
         int z = location.getBlockZ();
         String message = player.getDisplayName() + " befindet sich bei x: " + x + "; y: " + y + "; z: " + z + ".";
-        this.messageManager.broadcast(Bukkit.getOnlinePlayers(), message);
+        String message_colored = "§e" + player.getDisplayName() + "§7 befindet sich bei x: §b" + x + "§7; y: §b" + y + "§7; z: §b" + z + "§7.";
+        this.messageManager.broadcast(Bukkit.getOnlinePlayers(), message_colored);
 
         this.discordUtil.send("Koordinaten-Veröffentlichung", message, null, Color.ORANGE, null, null, null);
     }
