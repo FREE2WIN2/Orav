@@ -2,6 +2,7 @@ package de.logilutions.orav;
 
 import de.logilutions.orav.database.DatabaseConnectionHolder;
 import de.logilutions.orav.database.DatabaseHandler;
+import de.logilutions.orav.discord.DiscordUtil;
 import de.logilutions.orav.discord.DiscordWebhook;
 import de.logilutions.orav.exception.DatabaseConfigException;
 import de.logilutions.orav.listener.PlayerDeathListener;
@@ -18,6 +19,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.logging.Level;
 
@@ -30,6 +32,7 @@ public class OravPlugin extends JavaPlugin {
     private OravPlayerManager oravPlayerManager;
     private SessionObserver sessionObserver;
     private MessageManager messageManager;
+    private DiscordUtil discordUtil;
 
     @Override
     public void onEnable() {
@@ -48,10 +51,11 @@ public class OravPlugin extends JavaPlugin {
         this.databaseHandler = new DatabaseHandler(databaseConnectionHolder);
         this.orav = databaseHandler.readOrav(config.getInt("current-orav"));
         this.oravPlayerManager = new OravPlayerManager(databaseHandler,orav);
+        this.discordUtil = new DiscordUtil("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
 
         Bukkit.getPluginManager().registerEvents(new TimsListener(messageManager), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinQuitListener(), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinQuitListener(discordUtil), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(discordUtil), this);
 
         initCommands();
 
@@ -83,14 +87,7 @@ public class OravPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
 
-        DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        webhook.setContent(":octagonal_sign: Der Server wurde gestoppt!");
-        try {
-            webhook.execute();
-            System.out.println("executed dc send");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.discordUtil.send("\":octagonal_sign: Der Server wurde gestoppt!\"", null, null, Color.CYAN, null, null, null);
 
         super.onDisable();
         if(sessionObserver != null){

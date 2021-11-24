@@ -2,6 +2,7 @@ package de.logilutions.orav.listener;
 
 import de.logilutions.orav.Orav;
 import de.logilutions.orav.database.DatabaseHandler;
+import de.logilutions.orav.discord.DiscordUtil;
 import de.logilutions.orav.discord.DiscordWebhook;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
@@ -24,8 +25,9 @@ import java.time.format.DateTimeFormatter;
 
 @AllArgsConstructor
 public class PlayerJoinQuitListener implements Listener {
+    private DiscordUtil discordUtil;
 
-//    private final OravPlayerManager oravPlayerManager;
+    //    private final OravPlayerManager oravPlayerManager;
 //    private final DatabaseHandler databaseHandler;
 //    @Setter
 //    private final Orav orav;
@@ -36,34 +38,24 @@ public class PlayerJoinQuitListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        DiscordWebhook.EmbedObject embedObject = new DiscordWebhook.EmbedObject();
-        embedObject.setAuthor(player.getDisplayName() + " hat den Server betreten.", "", "https://visage.surgeplay.com/face/" + player.getUniqueId());
-        embedObject.setColor(Color.GRAY);
-        webhook.addEmbed(embedObject);
-        try {
-            webhook.execute();
-            System.out.println("executed dc send");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        discordUtil.send(
+                null, null, null,
+                Color.GRAY,
+                player.getDisplayName() + " hat den Server betreten.",
+                "https://visage.surgeplay.com/face/" + player.getUniqueId(),
+                null);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        DiscordWebhook.EmbedObject embedObject = new DiscordWebhook.EmbedObject();
-        embedObject.setAuthor(player.getDisplayName() + " hat den Server verlassen.", "", "https://visage.surgeplay.com/face/" + player.getUniqueId());
-        embedObject.setColor(Color.GRAY);
-        webhook.addEmbed(embedObject);
-        try {
-            webhook.execute();
-            System.out.println("executed dc send");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        discordUtil.send(
+                null, null, null,
+                Color.GRAY,
+                player.getDisplayName() + " hat den Server verlassen.",
+                "https://visage.surgeplay.com/face/" + player.getUniqueId(),
+                null);
     }
 
 //    @EventHandler
