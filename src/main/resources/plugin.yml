@@ -13,3 +13,6 @@ commands:
   leakcoords:
     description: Leaks the specified players current coordinates into discord an ingame chat
     usage: /leakcoords <player>
+  orav:
+    description: An Admin Command for orav admins
+    usage: /orav admin

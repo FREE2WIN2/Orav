@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 public class PlaySession {
 
-    private final Long id;
+    @Setter
+    private  Long id;
     private final OravPlayer player;
     private final LocalDateTime start;
     @Setter
@@ -29,4 +30,5 @@ public class PlaySession {
         }
         return Duration.between(start,end).toMillis();
     }
+
 }

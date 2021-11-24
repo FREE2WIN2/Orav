@@ -13,24 +13,25 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class OravPlayer {
-    private Long id;
-    private OravTeam oravTeam;
-    private UUID uuid;
+    private final Long id;
+    private final OravTeam oravTeam;
+    private final UUID uuid;
+    @Setter
     private PlaySession currentSession;
     @Setter
     private boolean droppedOut;
     @Setter
     private boolean hasValidSession;
-
+    @Setter
+    private boolean inFight;
     public OravPlayer(Long id, OravTeam oravTeam, UUID uuid, boolean droppedOut) {
         this.id = id;
         this.oravTeam = oravTeam;
         this.uuid = uuid;
         this.droppedOut = droppedOut;
-        this.currentSession = new PlaySession(this);
     }
 
-    public Player getPlayer(){
+    public Player getPlayer() {
         return Bukkit.getPlayer(uuid);
     }
 }

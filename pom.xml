@@ -20,7 +20,7 @@
         <version.hikaricp>3.4.5</version.hikaricp>
         <version.javax-validation>2.0.1.Final</version.javax-validation>
         <version.mysql-connector>8.0.13</version.mysql-connector>
-
+        <version.mariadb-client>2.7.4</version.mariadb-client>
         <version.maven-surefire-plugin>3.0.0-M5</version.maven-surefire-plugin>
         <version.maven-shade-plugin>3.2.4</version.maven-shade-plugin>
         <version.mariadb-java-client>2.7.1</version.mariadb-java-client>
@@ -45,9 +45,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${version.mysql-connector}</version>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${version.mariadb-client}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

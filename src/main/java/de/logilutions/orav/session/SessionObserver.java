@@ -1,39 +1,40 @@
 package de.logilutions.orav.session;
 
+import de.logilutions.orav.Orav;
 import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.player.OravPlayer;
+import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.util.MessageManager;
+import de.logilutions.orav.util.Scheduler;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
+@RequiredArgsConstructor
 public class SessionObserver {
 
     private final DatabaseHandler databaseHandler;
     private final JavaPlugin javaPlugin;
-    private long sessionDuration; //millis
     private final Map<UUID, BukkitTask> bukkitTaskMap = new HashMap<>();
     private final MessageManager messageManager;
-
-    public SessionObserver(DatabaseHandler databaseHandler, JavaPlugin javaPlugin, long sessionDuration, MessageManager messageManager) {
-        this.databaseHandler = databaseHandler;
-        this.javaPlugin = javaPlugin;
-        this.sessionDuration = sessionDuration;
-        this.messageManager = messageManager;
-    }
+    private final OravPlayerManager oravPlayerManager;
+    private final Orav orav; //millis
 
     public void startSession(OravPlayer oravPlayer) {
         if (this.bukkitTaskMap.containsKey(oravPlayer.getUuid())) {
             return;
         }
-
-        long remainingSessionTime = sessionDuration;
-        Collection<PlaySession> playSessions = databaseHandler.getSessions(oravPlayer);
+        long remainingSessionTime;
+        if (orav.getStartDate().toLocalDate().isEqual(LocalDate.now())) {
+            remainingSessionTime = orav.getPlayTimeDayOne();
+        } else {
+            remainingSessionTime = orav.getPlayTime();
+        }
+        Collection<PlaySession> playSessions = databaseHandler.getSessionsFromToday(oravPlayer);
         for (PlaySession playSession : playSessions) {
             remainingSessionTime -= playSession.getPlayedTime();
         }
@@ -41,22 +42,37 @@ public class SessionObserver {
             endSession(oravPlayer);
             return;
         }
-        SessionRunnable sessionRunnable = new SessionRunnable(oravPlayer, sessionDuration, messageManager, this::endSession);
-        BukkitTask bukkitTask = Bukkit.getScheduler().runTaskTimer(javaPlugin, sessionRunnable, 0, 20);
+        oravPlayer.setCurrentSession(new PlaySession(oravPlayer));
+        oravPlayer.setHasValidSession(true);
+        this.databaseHandler.startSession(oravPlayer);
+        SessionRunnable sessionRunnable = new SessionRunnable(oravPlayer, remainingSessionTime, messageManager, this::endSession);
+        BukkitTask bukkitTask = Bukkit.getScheduler().runTaskTimerAsynchronously(javaPlugin, sessionRunnable, 0, 20);
         this.bukkitTaskMap.put(oravPlayer.getUuid(), bukkitTask);
     }
 
     public void endSession(OravPlayer oravPlayer) {
-        if (this.bukkitTaskMap.containsKey(oravPlayer.getUuid())) {
-            this.bukkitTaskMap.get(oravPlayer.getUuid()).cancel();
-            this.bukkitTaskMap.remove(oravPlayer.getUuid());
+        synchronized (bukkitTaskMap) {
+            if (this.bukkitTaskMap.containsKey(oravPlayer.getUuid())) {
+                this.bukkitTaskMap.get(oravPlayer.getUuid()).cancel();
+                this.bukkitTaskMap.remove(oravPlayer.getUuid());
+            }
+        }
+        if (oravPlayer.getCurrentSession() != null) {
+            databaseHandler.stopSession(oravPlayer);
         }
         oravPlayer.setHasValidSession(false);
+        Scheduler scheduler = new Scheduler();
+        scheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimer(
+                javaPlugin,
+                new SessionOverRunnable(oravPlayer, p -> scheduler.cancel()),
+                0,
+                40));
     }
 
     public void cancel() {
-        for (BukkitTask bukkitTask : bukkitTaskMap.values()) {
-            bukkitTask.cancel();
+        for (Map.Entry<UUID, BukkitTask> entry : new HashSet<>(bukkitTaskMap.entrySet())) {
+            OravPlayer oravPlayer = oravPlayerManager.getPlayer(entry.getKey());
+            endSession(oravPlayer);
         }
     }
 }

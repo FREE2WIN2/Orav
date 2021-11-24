@@ -1,7 +1,6 @@
 package de.logilutions.orav.database;
 
 import de.logilutions.orav.Orav;
-import de.logilutions.orav.OravPlugin;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.session.PlaySession;
 import de.logilutions.orav.team.OravTeam;
@@ -9,6 +8,7 @@ import de.logilutions.orav.team.TeamColor;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -22,7 +22,10 @@ public class DatabaseHandler {
 
     public OravPlayer readOravPlayer(UUID uuid, long oravId) {
         try (Connection connection = databaseConnectionHolder.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM player WHERE uuid = ? AND fk_orav_id = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT player.id, uuid, fk_team_id, dropped_out" +
+                            " FROM player,team" +
+                            " WHERE uuid = ? AND fk_orav_id = ? AND player.fk_team_id = team.id");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setLong(2, oravId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -101,12 +104,18 @@ public class DatabaseHandler {
     }
 
     public void startSession(OravPlayer oravPlayer) {
+        if (oravPlayer.getCurrentSession() == null) {
+            return;
+        }
         try (Connection connection = databaseConnectionHolder.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO session(`fk_player_id`, `login`) VALUES (?,?);", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setLong(1, oravPlayer.getId());
             preparedStatement.setObject(2, oravPlayer.getCurrentSession().getStart());
             preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet.next()) {
+                oravPlayer.getCurrentSession().setId(resultSet.getLong("id"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,10 +123,13 @@ public class DatabaseHandler {
 
 
     public void stopSession(OravPlayer oravPlayer) {
+        if (oravPlayer.getCurrentSession() == null) {
+            return;
+        }
         try (Connection connection = databaseConnectionHolder.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE session SET logout = ? where fk_player_id = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE session SET logout = ? where id = ?");
             preparedStatement.setObject(1, LocalDateTime.now());
-            preparedStatement.setLong(2, oravPlayer.getId());
+            preparedStatement.setLong(2, oravPlayer.getCurrentSession().getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -143,8 +155,15 @@ public class DatabaseHandler {
         return new PlaySession(
                 resultSet.getLong("id"),
                 oravPlayer,
-                resultSet.getObject("start", LocalDateTime.class),
-                resultSet.getObject("start", LocalDateTime.class)
+                resultSet.getObject("login", LocalDateTime.class),
+                resultSet.getObject("logout", LocalDateTime.class)
         );
+    }
+
+    public Collection<PlaySession> getSessionsFromToday(OravPlayer oravPlayer) {
+        Collection<PlaySession> playSessionList = getSessions(oravPlayer);
+        LocalDate localDate = LocalDate.now();
+        playSessionList.removeIf(playSession -> localDate.isAfter(playSession.getStart().toLocalDate()));
+        return playSessionList;
     }
 }

@@ -1,9 +1,9 @@
 package de.logilutions.orav.database;
 
-import com.mysql.cj.jdbc.MysqlDataSource;
 import de.logilutions.orav.exception.DatabaseConfigException;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
+import org.mariadb.jdbc.MariaDbDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,8 +15,8 @@ public class DatabaseConnectionHolder {
     private final String user;
     private final String password;
 
-    private final MysqlDataSource mysqlDataSource;
-    public DatabaseConnectionHolder(ConfigurationSection configurationSection) throws DatabaseConfigException {
+    private final MariaDbDataSource mariaDbDataSource;
+    public DatabaseConnectionHolder(ConfigurationSection configurationSection) throws DatabaseConfigException, SQLException {
         this.host = configurationSection.getString("host");
         this.database = configurationSection.getString("database");
         this.user = configurationSection.getString("user");
@@ -25,14 +25,14 @@ public class DatabaseConnectionHolder {
         if(host == null || database == null || user == null || password == null){
             throw new DatabaseConfigException("Missing database configuration properties! please check it in the plugin directory!");
         }
-        this.mysqlDataSource = new MysqlDataSource();
-        mysqlDataSource.setServerName(host);
-        mysqlDataSource.setDatabaseName(database);
-        mysqlDataSource.setUser(user);
-        mysqlDataSource.setPassword(password);
+        this.mariaDbDataSource = new MariaDbDataSource();
+        mariaDbDataSource.setServerName(host);
+        mariaDbDataSource.setDatabaseName(database);
+        mariaDbDataSource.setUser(user);
+        mariaDbDataSource.setPassword(password);
     }
 
     public Connection getConnection() throws SQLException {
-        return mysqlDataSource.getConnection();
+        return mariaDbDataSource.getConnection();
     }
 }
