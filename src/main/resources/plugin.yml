@@ -7,3 +7,6 @@ commands:
   generatespawn:
     description: Generates the ORAV Spawn
     usage: /generatespawn <numberOfTeams>
+  generatespawncycle:
+    description: Draws a cycle on the ground to correctly place start holes
+    usage: /generatespawncycle <radius>
