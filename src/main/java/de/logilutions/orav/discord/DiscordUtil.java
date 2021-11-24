@@ -10,13 +10,17 @@ public class DiscordUtil {
         discordWebhook = new DiscordWebhook(url);
     }
 
-    public void send(String title, String description, String image, Color color, String authorName, String authorImage, String authorUrl) {
+    public void send(String title, String description, String image, Color color, String authorName, String authorUrl, String authorImage) {
         DiscordWebhook.EmbedObject embedObject = new DiscordWebhook.EmbedObject();
-        embedObject.setTitle(title);
-        embedObject.setDescription(description);
-        embedObject.setImage(image);
-        embedObject.setColor(color);
-        if (authorImage.equals("") || authorName.equals("")) {
+        if (title != null) embedObject.setTitle(title);
+        if (description != null) embedObject.setDescription(description);
+        if (image != null) embedObject.setImage(image);
+        if (color != null) embedObject.setColor(color);
+
+        if (authorImage != null || authorUrl != null || authorName != null) {
+            if (authorName == null) authorName = "";
+            if (authorUrl == null) authorUrl = "";
+            if (authorImage == null) authorImage = "";
             embedObject.setAuthor(authorName, authorUrl, authorImage);
         }
         discordWebhook.addEmbed(embedObject);

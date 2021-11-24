@@ -42,8 +42,8 @@ public class PlayerJoinQuitListener implements Listener {
                 null, null, null,
                 Color.GRAY,
                 player.getDisplayName() + " hat den Server betreten.",
-                "https://visage.surgeplay.com/face/" + player.getUniqueId(),
-                null);
+                null,
+                "https://visage.surgeplay.com/face/" + player.getUniqueId());
     }
 
     @EventHandler
@@ -54,8 +54,8 @@ public class PlayerJoinQuitListener implements Listener {
                 null, null, null,
                 Color.GRAY,
                 player.getDisplayName() + " hat den Server verlassen.",
-                "https://visage.surgeplay.com/face/" + player.getUniqueId(),
-                null);
+                null,
+                "https://visage.surgeplay.com/face/" + player.getUniqueId());
     }
 
 //    @EventHandler

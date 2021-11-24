@@ -1,5 +1,6 @@
 package de.logilutions.orav;
 
+import de.logilutions.orav.command.LeakCoords;
 import de.logilutions.orav.database.DatabaseConnectionHolder;
 import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.discord.DiscordUtil;
@@ -82,6 +83,7 @@ public class OravPlugin extends JavaPlugin {
     private void initCommands() {
         getCommand("generatespawn").setExecutor(new SpawnGenerator(messageManager));
         getCommand("generatespawncycle").setExecutor(new SpawnCycleGenerator(messageManager));
+        getCommand("leakcoords").setExecutor(new LeakCoords(messageManager, discordUtil));
     }
 
     @Override
