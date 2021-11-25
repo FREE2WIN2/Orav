@@ -9,6 +9,8 @@ import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.scoreboard.ScoreboardHandler;
 import de.logilutions.orav.session.SessionObserver;
+import de.logilutions.orav.util.Helper;
+import de.logilutions.orav.util.MessageManager;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -29,16 +31,17 @@ import java.time.format.DateTimeFormatter;
 
 @AllArgsConstructor
 public class PlayerJoinQuitListener implements Listener {
-    private DiscordUtil discordUtil;
+    private final DiscordUtil discordUtil;
 
     private final OravPlayerManager oravPlayerManager;
-    private final DatabaseHandler databaseHandler;
     @Setter
     private final Orav orav;
     private final SessionObserver sessionObserver;
     private final ScoreboardHandler scoreboardHandler;
     private final PlayerLogoutsConfig playerLogoutsConfig;
-    private final JavaPlugin javaPlugin;
+    private final Helper helper;
+    private final MessageManager messageManager;
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -58,23 +61,27 @@ public class PlayerJoinQuitListener implements Listener {
             String to = orav.getLatestLogin().format(formatter);
             if (!player.isOp()) {
                 player.kickPlayer("Heute darf nicht mehr gespielt werden! (Nur von " + from + "Uhr bis " + to + "Uhr)");
-            }else{
-                player.sendMessage("KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
+            } else {
+                messageManager.sendMessage(player,"KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             }
             return;
         }
 
-        if (oravPlayer.isDroppedOut()) {
-            OravPlayer teamMate = databaseHandler.getTeamMate(oravPlayer);
-            if (teamMate == null || teamMate.isDroppedOut()) {
-                player.setGameMode(GameMode.SPECTATOR);
-                scoreboardHandler.playerSpawned(player);
-            } else {
-                player.kickPlayer("Du bist ausgeschieden! Du darfst erst spectaten, wenn dein Teammate getötet wurde!");
-            }
+
+        if (!helper.handleSpawn(oravPlayer)) {
+            scoreboardHandler.playerSpawned(player);
+
             return;
         }
         sessionObserver.startSession(oravPlayer);
+        if (!oravPlayer.isHasValidSession()) {
+            if (!player.isOp()) {
+                player.kickPlayer("Deine Spielzeit ist für heute abgelaufen!");
+            }else{
+                messageManager.sendMessage(player,"Deine Spielzeit ist abgelaufen! Bitte mach nur Administrativen quatsch!");
+            }
+            return;
+        }
         scoreboardHandler.playerSpawned(player);
         discordUtil.send(
                 null, null, null,
@@ -103,7 +110,7 @@ public class PlayerJoinQuitListener implements Listener {
                 player.getDisplayName() + " hat den Server verlassen.",
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
-        playerLogoutsConfig.saveLogOutPosition(player.getUniqueId(),player.getLocation());
+        playerLogoutsConfig.saveLogOutPosition(player.getUniqueId(), player.getLocation());
     }
 
 

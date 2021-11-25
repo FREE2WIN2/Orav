@@ -1,5 +1,6 @@
 package de.logilutions.orav.player;
 
+import de.logilutions.orav.fighting.OravPlayerFighting;
 import de.logilutions.orav.session.PlaySession;
 import de.logilutions.orav.team.OravTeam;
 import lombok.AllArgsConstructor;
@@ -8,9 +9,8 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
+import java.util.*;
 
-@AllArgsConstructor
 @Getter
 public class OravPlayer {
     private final Long id;
@@ -33,5 +33,18 @@ public class OravPlayer {
 
     public Player getPlayer() {
         return Bukkit.getPlayer(uuid);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OravPlayer that = (OravPlayer) o;
+        return Objects.equals(uuid, that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 }

@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class SessionOverRunnable implements Runnable {
     private final OravPlayer oravPlayer;
     private final Consumer<OravPlayer> onEnd;
-    private final PotionEffect potionEffect = PotionEffectType.BLINDNESS.createEffect(40,255);
+    private final PotionEffect potionEffect = PotionEffectType.BLINDNESS.createEffect(80,255);
     @Override
     public void run() {
         Player player = oravPlayer.getPlayer();

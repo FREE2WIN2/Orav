@@ -10,7 +10,7 @@ import org.bukkit.scoreboard.Team;
 @AllArgsConstructor
 @Getter
 public class OravTeam {
-    private Long id;
-    private String name;
-    private TeamColor teamColor;
+    private final Long id;
+    private final String name;
+    private final TeamColor teamColor;
 }

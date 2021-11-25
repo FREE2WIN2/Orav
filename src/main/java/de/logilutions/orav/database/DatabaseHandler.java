@@ -166,4 +166,18 @@ public class DatabaseHandler {
         playSessionList.removeIf(playSession -> localDate.isAfter(playSession.getStart().toLocalDate()));
         return playSessionList;
     }
+
+    public void updatePlayer(OravPlayer oravPlayer) {
+        if (oravPlayer == null) {
+            return;
+        }
+        try (Connection connection = databaseConnectionHolder.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE player SET dropped_out = ? where id = ?");
+            preparedStatement.setObject(1, oravPlayer.isDroppedOut());
+            preparedStatement.setLong(2, oravPlayer.getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

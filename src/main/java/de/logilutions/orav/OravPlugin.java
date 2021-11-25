@@ -2,22 +2,22 @@ package de.logilutions.orav;
 
 import de.logilutions.orav.command.LeakCoords;
 import de.logilutions.orav.command.OravCommand;
+import de.logilutions.orav.config.PlayerFightLogoutConfig;
 import de.logilutions.orav.config.PlayerLogoutsConfig;
 import de.logilutions.orav.database.DatabaseConnectionHolder;
 import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.discord.DiscordUtil;
 import de.logilutions.orav.discord.DiscordWebhook;
 import de.logilutions.orav.exception.DatabaseConfigException;
-import de.logilutions.orav.listener.PlayerDeathListener;
-import de.logilutions.orav.listener.PlayerJoinQuitListener;
-import de.logilutions.orav.listener.PlayerSessionListener;
-import de.logilutions.orav.listener.TimsListener;
+import de.logilutions.orav.fighting.FightingObserver;
+import de.logilutions.orav.listener.*;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.scoreboard.ScoreboardHandler;
 import de.logilutions.orav.session.SessionObserver;
 import de.logilutions.orav.spawn.SpawnCycleGenerator;
 import de.logilutions.orav.spawn.SpawnGenerator;
+import de.logilutions.orav.util.Helper;
 import de.logilutions.orav.util.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -42,8 +42,12 @@ public class OravPlugin extends JavaPlugin {
     private SessionObserver sessionObserver;
     private MessageManager messageManager;
     private DiscordUtil discordUtil;
-    private PlayerLogoutsConfig playerLogoutsConfig;
     private ScoreboardHandler scoreboardHandler;
+    private FightingObserver fightingObserver;
+    /* Config */
+    private PlayerLogoutsConfig playerLogoutsConfig;
+    private PlayerFightLogoutConfig playerFightLogoutConfig;
+    private Helper helper;
 
     @Override
     public void onEnable() {
@@ -57,10 +61,11 @@ public class OravPlugin extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
-
+        this.databaseHandler = new DatabaseHandler(databaseConnectionHolder);
+        this.helper = new Helper(databaseHandler);
         this.messageManager = new MessageManager();
         this.playerLogoutsConfig = new PlayerLogoutsConfig(new File(getDataFolder(), "playerLogouts.yml"));
-        this.databaseHandler = new DatabaseHandler(databaseConnectionHolder);
+        this.playerFightLogoutConfig = new PlayerFightLogoutConfig(new File(getDataFolder(), "playerLogoutWhileFight.yml"));
         if (config.contains("current-orav")) {
             int oravID = config.getInt("current-orav");
             if (oravID > 0) {
@@ -76,11 +81,10 @@ public class OravPlugin extends JavaPlugin {
         }
         this.discordUtil = new DiscordUtil("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
         this.scoreboardHandler = new ScoreboardHandler();
-
+        this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig);
 
         initCommands();
         registerListener();
-
 //        DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
 //        webhook.setContent("----------------------------\nDer Server wurde gestartet!");
 //        try {
@@ -94,10 +98,11 @@ public class OravPlugin extends JavaPlugin {
     private void registerListener() {
         PluginManager pm = Bukkit.getPluginManager();
         if (orav != null) {
-            pm.registerEvents(new TimsListener(messageManager), this);
-            pm.registerEvents(new PlayerDeathListener(discordUtil), this);
-            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, databaseHandler, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this), this);
-            pm.registerEvents(new PlayerSessionListener(oravPlayerManager), this);
+            pm.registerEvents(new PlayerDeathListener(discordUtil, oravPlayerManager, databaseHandler, helper), this);
+            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager),this);
+            pm.registerEvents(new PlayerSessionListener(oravPlayerManager, this.helper), this);
+            pm.registerEvents(new PortalListener(), this);
+            fightingObserver.start();
         }
     }
 
@@ -115,10 +120,10 @@ public class OravPlugin extends JavaPlugin {
         getCommand("generatespawn").setExecutor(new SpawnGenerator(messageManager));
         getCommand("generatespawncycle").setExecutor(new SpawnCycleGenerator(messageManager));
         getCommand("leakcoords").setExecutor(new LeakCoords(messageManager, discordUtil));
-        if(sessionObserver != null){
-        OravCommand oravCommand = new OravCommand(this.messageManager,oravPlayerManager,sessionObserver);
-        getCommand("orav").setExecutor(oravCommand);
-        getCommand("orav").setTabCompleter(oravCommand);
+        if (sessionObserver != null) {
+            OravCommand oravCommand = new OravCommand(this.messageManager, oravPlayerManager, sessionObserver);
+            getCommand("orav").setExecutor(oravCommand);
+            getCommand("orav").setTabCompleter(oravCommand);
 
         }
 
