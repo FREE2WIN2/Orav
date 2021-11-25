@@ -62,7 +62,7 @@ public class PlayerJoinQuitListener implements Listener {
             if (!player.isOp()) {
                 player.kickPlayer("Heute darf nicht mehr gespielt werden! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             } else {
-                messageManager.sendMessage(player,"KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
+                messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             }
             return;
         }
@@ -70,19 +70,20 @@ public class PlayerJoinQuitListener implements Listener {
 
         if (!helper.handleSpawn(oravPlayer)) {
             scoreboardHandler.playerSpawned(player);
-
+            event.setJoinMessage(player.getDisplayName() + "§e hat als Zuschauer den Server betreten!");
             return;
         }
         sessionObserver.startSession(oravPlayer);
         if (!oravPlayer.isHasValidSession()) {
             if (!player.isOp()) {
                 player.kickPlayer("Deine Spielzeit ist für heute abgelaufen!");
-            }else{
-                messageManager.sendMessage(player,"Deine Spielzeit ist abgelaufen! Bitte mach nur Administrativen quatsch!");
+            } else {
+                messageManager.sendMessage(player, "Deine Spielzeit ist abgelaufen! Bitte mach nur Administrativen quatsch!");
             }
             return;
         }
         scoreboardHandler.playerSpawned(player);
+        event.setJoinMessage(player.getDisplayName() + "§e hat den Server betreten!");
         discordUtil.send(
                 null, null, null,
                 Color.GRAY,
@@ -111,6 +112,7 @@ public class PlayerJoinQuitListener implements Listener {
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
         playerLogoutsConfig.saveLogOutPosition(player.getUniqueId(), player.getLocation());
+        oravPlayerManager.removePlayer(oravPlayer.getUuid());
     }
 
 

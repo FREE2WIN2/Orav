@@ -57,6 +57,7 @@ public class DatabaseHandler {
                 return new OravTeam(
                         resultSet.getLong("id"),
                         resultSet.getString("name"),
+                        resultSet.getString("shortname"),
                         TeamColor.valueOf(resultSet.getString("color"))
                 );
             }

@@ -80,7 +80,7 @@ public class OravPlugin extends JavaPlugin {
             }
         }
         this.discordUtil = new DiscordUtil("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        this.scoreboardHandler = new ScoreboardHandler();
+        this.scoreboardHandler = new ScoreboardHandler(this.oravPlayerManager);
         this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig);
 
         initCommands();
@@ -102,6 +102,7 @@ public class OravPlugin extends JavaPlugin {
             pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager),this);
             pm.registerEvents(new PlayerSessionListener(oravPlayerManager, this.helper), this);
             pm.registerEvents(new PortalListener(), this);
+            pm.registerEvents(new PlayerChatListener(),this);
             fightingObserver.start();
         }
     }

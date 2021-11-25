@@ -4,6 +4,7 @@ import de.logilutions.orav.Orav;
 import de.logilutions.orav.database.DatabaseHandler;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,6 +20,9 @@ public class OravPlayerManager {
         OravPlayer oravPlayer = playerMap.get(uuid);
         if (oravPlayer == null) {
             oravPlayer = databaseHandler.readOravPlayer(uuid, orav.getId());
+            if(oravPlayer == null){
+                return null;
+            }
             playerMap.put(uuid, oravPlayer);
         }
         return oravPlayer;
@@ -27,5 +31,9 @@ public class OravPlayerManager {
 
     public void removePlayer(UUID uuid) {
         playerMap.remove(uuid);
+    }
+
+    public Collection<OravPlayer> getAll(){
+        return playerMap.values();
     }
 }

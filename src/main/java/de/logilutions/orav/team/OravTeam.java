@@ -12,5 +12,6 @@ import org.bukkit.scoreboard.Team;
 public class OravTeam {
     private final Long id;
     private final String name;
+    private final String shortName;
     private final TeamColor teamColor;
 }
