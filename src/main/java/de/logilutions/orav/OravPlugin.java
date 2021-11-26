@@ -84,15 +84,8 @@ public class OravPlugin extends JavaPlugin {
         this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig);
 
         initCommands();
-        registerListener();
-//        DiscordWebhook webhook = new DiscordWebhook("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-//        webhook.setContent("----------------------------\nDer Server wurde gestartet!");
-//        try {
-//            webhook.execute();
-//            System.out.println("executed dc send");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+
+        this.discordUtil.send(":green_circle: Der Server wurde gestartet!", null, null, Color.CYAN, null, null, null);
     }
 
     private void registerListener() {
@@ -133,7 +126,7 @@ public class OravPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
 
-        this.discordUtil.send("\":octagonal_sign: Der Server wurde gestoppt!\"", null, null, Color.CYAN, null, null, null);
+        this.discordUtil.send(":red_circle: Der Server wurde gestoppt!", null, null, Color.CYAN, null, null, null);
 
         super.onDisable();
         if (sessionObserver != null) {
