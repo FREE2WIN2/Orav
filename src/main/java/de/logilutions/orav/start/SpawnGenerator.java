@@ -22,14 +22,14 @@ public class SpawnGenerator {
             oravPlayers.add(oravPlayer);
             teamMember.put(oravPlayer.getOravTeam(), oravPlayers);
         }
-        double angle = 360.0 / (double) teamMember.size();
+        double angle = 360.0 / (double) players.size();
+        angle = angle * (Math.PI/180);
         double currentAngle = 0;
         for (Map.Entry<OravTeam, List<OravPlayer>> entry : teamMember.entrySet()) {
             for (OravPlayer oravPlayer : entry.getValue()) {
-                int x = (int) (0.5 + radius * Math.cos(currentAngle));
-                int z = (int) (0.5 + radius * Math.sin(currentAngle));
+                int x = (int) (radius * Math.cos(currentAngle));
+                int z = (int) (radius * Math.sin(currentAngle));
                 Location middleTeamSpawn = center.clone().add(x, 0, z);
-                System.out.println(middleTeamSpawn);
                 placeTeamSpawn(middleTeamSpawn);
                 locationMap.put(oravPlayer.getUuid(), middleTeamSpawn);
                 currentAngle += angle;
