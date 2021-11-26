@@ -23,20 +23,17 @@ public class SpawnGenerator {
             teamMember.put(oravPlayer.getOravTeam(), oravPlayers);
         }
         double angle = 360.0 / (double) teamMember.size();
-        double teamPlayerAngle = angle / (double) players.size() * 2.0;
-        angle -= 2 * teamPlayerAngle;
-
         double currentAngle = 0;
         for (Map.Entry<OravTeam, List<OravPlayer>> entry : teamMember.entrySet()) {
             for (OravPlayer oravPlayer : entry.getValue()) {
-                int x = (int) (center.getBlockX() + 0.5 + radius * Math.cos(currentAngle));
-                int z = (int) (center.getBlockZ() + 0.5 + radius * Math.sin(currentAngle));
+                int x = (int) (0.5 + radius * Math.cos(currentAngle));
+                int z = (int) (0.5 + radius * Math.sin(currentAngle));
                 Location middleTeamSpawn = center.clone().add(x, 0, z);
+                System.out.println(middleTeamSpawn);
                 placeTeamSpawn(middleTeamSpawn);
                 locationMap.put(oravPlayer.getUuid(), middleTeamSpawn);
-                currentAngle += teamPlayerAngle;
+                currentAngle += angle;
             }
-            currentAngle += angle;
         }
 
         return locationMap;
@@ -47,10 +44,10 @@ public class SpawnGenerator {
         int y = center.getBlockY();
         int z = center.getBlockZ();
 
-        center.getWorld().getBlockAt(x - 1, y, z - 1).setType(Material.OAK_SLAB);
-        center.getWorld().getBlockAt(x - 1, y, z + 1).setType(Material.OAK_SLAB);
-        center.getWorld().getBlockAt(x + 1, y, z - 1).setType(Material.OAK_SLAB);
-        center.getWorld().getBlockAt(x + 1, y, z + 1).setType(Material.OAK_SLAB);
+        center.getWorld().getBlockAt(x, y, z - 1).setType(Material.OAK_SLAB);
+        center.getWorld().getBlockAt(x, y, z + 1).setType(Material.OAK_SLAB);
+        center.getWorld().getBlockAt(x + 1, y, z).setType(Material.OAK_SLAB);
+        center.getWorld().getBlockAt(x - 1, y, z).setType(Material.OAK_SLAB);
         center.getWorld().getBlockAt(x, y - 1, z).setType(Material.AIR);
     }
 }

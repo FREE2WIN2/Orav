@@ -2,26 +2,35 @@ package de.logilutions.orav.scoreboard;
 
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
+import de.logilutions.orav.tablist.TabList;
 import de.logilutions.orav.team.OravTeam;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-@RequiredArgsConstructor
 public class ScoreboardHandler {
 
     private final OravPlayerManager oravPlayerManager;
+    private final TabList tabList;
+    public ScoreboardHandler(OravPlayerManager oravPlayerManager, TabList tabList) {
+        this.tabList = tabList;
+        for (Team team : Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
+            team.unregister();
+        }
+        this.oravPlayerManager = oravPlayerManager;
+    }
 
     public void playerSpawned(Player player) {
-        System.out.println("player spawned");
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
             return;
         }
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard scoreboard = player.getScoreboard();
+        if (scoreboard != Bukkit.getScoreboardManager().getMainScoreboard()) {
+            scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        }
         addToScoreboard(oravPlayer, scoreboard, true);
         for (OravPlayer oravPlayer1 : oravPlayerManager.getAll()) {
             if (oravPlayer1.equals(oravPlayer)) {
@@ -35,6 +44,12 @@ public class ScoreboardHandler {
             addToScoreboard(oravPlayer, player1.getScoreboard(), false);
         }
         player.setScoreboard(scoreboard);
+
+        sendTabList(player);
+    }
+
+    private void sendTabList(Player player) {
+       tabList.send(player);
     }
 
     public void playerQuit(Player player) {
@@ -71,6 +86,7 @@ public class ScoreboardHandler {
         if (team == null) {
             team = scoreboard.registerNewTeam(teamName);
             team.setPrefix(prefix);
+            team.setDisplayName(prefix + player.getName());
             team.setColor(ChatColor.GRAY);
             team.setAllowFriendlyFire(false);
             team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
@@ -79,6 +95,8 @@ public class ScoreboardHandler {
 
         if (displayname) {
             player.setDisplayName(prefix + player.getName());
+            player.setCustomName(prefix + player.getName());
+            player.setPlayerListName(prefix + player.getName());
         }
     }
 }

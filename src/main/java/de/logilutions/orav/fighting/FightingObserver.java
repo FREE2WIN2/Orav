@@ -153,6 +153,17 @@ public class FightingObserver implements Listener {
             event.setCancelled(true);
             return;
         }
+        if(damagedOravPlayer.isFightProtected()){
+            this.messageManager.sendMessage(damagerPlayer, "Dein Opfer ist noch in Schutzzeit!");
+            event.setCancelled(true);
+            return;
+        }
+        if(damagerOravPlayer.isFightProtected()){
+            this.messageManager.sendMessage(damagerPlayer, "Du bist noch in Schutzzeit!");
+            event.setCancelled(true);
+            return;
+        }
+
         addFight(damagedOravPlayer, damagerOravPlayer);
     }
 

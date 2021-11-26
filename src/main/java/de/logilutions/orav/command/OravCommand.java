@@ -1,9 +1,11 @@
 package de.logilutions.orav.command;
 
+import de.logilutions.orav.Orav;
 import de.logilutions.orav.OravPlugin;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.session.SessionObserver;
+import de.logilutions.orav.start.OravStart;
 import de.logilutions.orav.util.MessageManager;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -22,6 +24,8 @@ public class OravCommand implements CommandExecutor, TabCompleter {
     private final MessageManager messageManager;
     private final OravPlayerManager oravPlayerManager;
     private final SessionObserver sessionObserver;
+    private final OravStart oravStart;
+    private final Orav orav;
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(!(commandSender instanceof Player) || !commandSender.isOp()){
@@ -44,6 +48,14 @@ public class OravCommand implements CommandExecutor, TabCompleter {
                     sessionObserver.endSession(oravPlayerManager.getPlayer(player.getUniqueId()));
                     messageManager.sendMessage(player,"Du has deine Session beendet!");
                     break;
+                case "start":
+                    if(orav.getState() != Orav.State.PREPARATION){
+                        messageManager.sendMessage(player,"%ec%Orav wurde bereits gestartet!");
+                        return true;
+                    }
+                    oravStart.startOrav();
+                    messageManager.sendMessage(player,"Orav wurde gestartet!");
+                    break;
             }
         }
         return true;
@@ -64,6 +76,7 @@ public class OravCommand implements CommandExecutor, TabCompleter {
         if(strings.length == 1){
             list.add("admin");
             list.add("invalidateSession");
+            list.add("start");
         }
 
         return list;

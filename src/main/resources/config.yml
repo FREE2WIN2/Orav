@@ -5,3 +5,7 @@ database:
   password:
 
 current-orav:
+start-spawn:
+  x:
+  y:
+  z:

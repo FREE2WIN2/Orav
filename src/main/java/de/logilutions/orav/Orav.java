@@ -1,14 +1,16 @@
 package de.logilutions.orav;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 public class Orav {
     private final long id;
@@ -17,7 +19,8 @@ public class Orav {
     private final LocalDateTime startDate;
     private final LocalTime earlyLogin;
     private final LocalTime latestLogin;
-    private final State state;
+    @Setter
+    private State state;
     private final long protectionTime;
     private final long protectionTimeAfterDayOne;
 

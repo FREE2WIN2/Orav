@@ -40,7 +40,7 @@
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <artifactId>spigot</artifactId>
             <version>${version.spigot}</version>
             <scope>provided</scope>
         </dependency>

@@ -30,6 +30,9 @@ public class PlayerDeathListener implements Listener {
         if (oravPlayer == null) {
             return;
         }
+        if(oravPlayer.getCurrentSession() == null){
+            return;
+        }
         oravPlayer.setDroppedOut(true);
         databaseHandler.stopSession(oravPlayer);
         databaseHandler.updatePlayer(oravPlayer);

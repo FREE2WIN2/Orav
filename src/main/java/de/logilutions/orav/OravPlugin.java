@@ -13,11 +13,16 @@ import de.logilutions.orav.listener.*;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.scoreboard.ScoreboardHandler;
 import de.logilutions.orav.session.SessionObserver;
+import de.logilutions.orav.start.OravStart;
+import de.logilutions.orav.start.SpawnGenerator;
+import de.logilutions.orav.tablist.TabList;
 import de.logilutions.orav.teamchest.TeamChestListener;
 import de.logilutions.orav.teamchest.TeamChestManager;
 import de.logilutions.orav.util.Helper;
 import de.logilutions.orav.util.MessageManager;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.WorldBorder;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -45,6 +50,7 @@ public class OravPlugin extends JavaPlugin {
     private PlayerFightLogoutConfig playerFightLogoutConfig;
     private TeamChestManager teamChestManager;
     private Helper helper;
+    private OravStart oravStart;
 
     @Override
     public void onEnable() {
@@ -77,20 +83,28 @@ public class OravPlugin extends JavaPlugin {
                         orav);
             }
         }
+        TabList tabList = new TabList();
         this.discordUtil = new DiscordUtil("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        this.scoreboardHandler = new ScoreboardHandler(this.oravPlayerManager);
+        this.scoreboardHandler = new ScoreboardHandler(this.oravPlayerManager, tabList);
         this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig);
+        //TODO radius per config
+        int x = config.getInt("start-spawn.x");
+        int y = config.getInt("start-spawn.y");
+        int z = config.getInt("start-spawn.z");
+        Location middle = new Location(Bukkit.getWorlds().get(0),x,y,z);
+        this.oravStart = new OravStart(new File(getDataFolder(),"oravStartLocations.yml"),orav,middle,new SpawnGenerator(),25,databaseHandler,this,messageManager,oravPlayerManager,sessionObserver);
 
         initCommands();
         registerListener();
         this.discordUtil.send(":green_circle: Der Server wurde gestartet!", null, null, Color.CYAN, null, null, null);
+        tabList.start(this);
     }
 
     private void registerListener() {
         PluginManager pm = Bukkit.getPluginManager();
         if (orav != null) {
             pm.registerEvents(new PlayerDeathListener(discordUtil, oravPlayerManager, databaseHandler, helper), this);
-            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager, this.databaseHandler), this);
+            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager, this.databaseHandler,oravStart), this);
             pm.registerEvents(new PlayerSessionListener(oravPlayerManager, this.helper), this);
             pm.registerEvents(new PortalListener(), this);
             pm.registerEvents(new PlayerChatListener(), this);
@@ -112,10 +126,9 @@ public class OravPlugin extends JavaPlugin {
     private void initCommands() {
         getCommand("leakcoords").setExecutor(new LeakCoords(messageManager, discordUtil));
         if (sessionObserver != null) {
-            OravCommand oravCommand = new OravCommand(this.messageManager, oravPlayerManager, sessionObserver);
+            OravCommand oravCommand = new OravCommand(this.messageManager, oravPlayerManager, sessionObserver,oravStart,orav);
             getCommand("orav").setExecutor(oravCommand);
             getCommand("orav").setTabCompleter(oravCommand);
-
         }
 
     }

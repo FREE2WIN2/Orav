@@ -13,20 +13,19 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Getter
+@Setter
 public class OravPlayer {
     private final Long id;
     private final OravTeam oravTeam;
     private final UUID uuid;
-    @Setter
+
     private PlaySession currentSession;
-    @Setter
     private boolean droppedOut;
-    @Setter
     private boolean hasValidSession;
-    @Setter
     private boolean inFight;
-    @Setter
-    private LocalDateTime protectedUntil = null;
+    private boolean fightProtected = false;
+    private boolean joined = true;
+
     public OravPlayer(Long id, OravTeam oravTeam, UUID uuid, boolean droppedOut) {
         this.id = id;
         this.oravTeam = oravTeam;

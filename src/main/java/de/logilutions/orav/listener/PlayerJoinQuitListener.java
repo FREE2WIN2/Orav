@@ -7,11 +7,16 @@ import de.logilutions.orav.discord.DiscordUtil;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.scoreboard.ScoreboardHandler;
+import de.logilutions.orav.session.PlaySession;
 import de.logilutions.orav.session.SessionObserver;
+import de.logilutions.orav.start.OravStart;
 import de.logilutions.orav.util.Helper;
 import de.logilutions.orav.util.MessageManager;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,6 +41,7 @@ public class PlayerJoinQuitListener implements Listener {
     private final Helper helper;
     private final MessageManager messageManager;
     private final DatabaseHandler databaseHandler;
+    private final OravStart oravStart;
 
     @EventHandler
     private void onLogin(AsyncPlayerPreLoginEvent event) {
@@ -55,11 +61,26 @@ public class PlayerJoinQuitListener implements Listener {
         if (orav == null) {
             return;
         }
-        if (orav.getState() == Orav.State.DEVELOPING && !player.isOp()) {
-            player.kickPlayer("§aMinecraft §5ORAV #5 §ahat noch nicht begonnen!");
+        OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
+        if (orav.getState() == Orav.State.DEVELOPING) {
+            if (!player.isOp()) {
+                player.kickPlayer("§aMinecraft §5ORAV #5 §ahat noch nicht begonnen!");
+            }
+            scoreboardHandler.playerSpawned(player);
+            event.setJoinMessage(player.getDisplayName() + "§e hat den Server betreten!");
+            oravPlayer.setHasValidSession(true);
             return;
         }
-        OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
+
+        if (orav.getState() == Orav.State.PREPARATION) {
+            oravPlayer.setHasValidSession(true);
+            player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+            player.setGameMode(GameMode.ADVENTURE);
+            scoreboardHandler.playerSpawned(player);
+            event.setJoinMessage(player.getDisplayName() + "§e hat den Server betreten!");
+            return;
+        }
+
         LocalTime now = LocalTime.now();
         if (orav.getEarlyLogin().isAfter(now) && orav.getLatestLogin().isBefore(now)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -67,6 +88,7 @@ public class PlayerJoinQuitListener implements Listener {
             String to = orav.getLatestLogin().format(formatter);
             if (!player.isOp()) {
                 player.kickPlayer("§aHeute darf nicht mehr gespielt werden! (Nur von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
+                oravPlayer.setJoined(false);
             } else {
                 messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             }
@@ -84,6 +106,7 @@ public class PlayerJoinQuitListener implements Listener {
         if (!oravPlayer.isHasValidSession()) {
             if (!player.isOp()) {
                 player.kickPlayer("§aDeine Spielzeit ist für heute abgelaufen!");
+                oravPlayer.setJoined(false);
             } else {
                 messageManager.sendMessage(player, "Deine Spielzeit ist abgelaufen! Bitte mach nur administrativen Quatsch!");
             }
@@ -99,21 +122,33 @@ public class PlayerJoinQuitListener implements Listener {
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
 
-
-        if(databaseHandler.getSessions(oravPlayer).size() == 1){
-
+        if (databaseHandler.getSessions(oravPlayer).size() == 0 && orav.getState() == Orav.State.RUNNING) {
+            oravStart.startOrav(player, false);
         }
+
+
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         if (orav == null) {
+            event.setQuitMessage("");
             return;
         }
         Player player = event.getPlayer();
+        if (orav.getState() == Orav.State.DEVELOPING) {
+            if (!player.isOp()) {
+                event.setQuitMessage("");
+            }
+        }
 
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
+            event.setQuitMessage("");
+            return;
+        }
+        if (!oravPlayer.isJoined()) {
+            event.setQuitMessage("");
             return;
         }
         sessionObserver.endSession(oravPlayer);
