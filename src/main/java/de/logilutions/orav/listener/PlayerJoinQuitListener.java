@@ -45,7 +45,7 @@ public class PlayerJoinQuitListener implements Listener {
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(event.getUniqueId());
         if (oravPlayer == null) {
             event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-            event.setKickMessage("Diesen Server dürfen nur angemeldete Spieler von Minecraft ORAV #5 betreten!");
+            event.setKickMessage("§aDiesen Server dürfen nur angemeldete Spieler von Minecraft §5ORAV #5 §abetreten!");
         }
     }
 
@@ -56,7 +56,7 @@ public class PlayerJoinQuitListener implements Listener {
             return;
         }
         if (orav.getState() == Orav.State.DEVELOPING && !player.isOp()) {
-            player.kickPlayer("Minecraft ORAV #5 hat noch nicht gestartet!");
+            player.kickPlayer("§aMinecraft §5ORAV #5 §ahat noch nicht begonnen!");
             return;
         }
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
@@ -66,7 +66,7 @@ public class PlayerJoinQuitListener implements Listener {
             String from = orav.getEarlyLogin().format(formatter);
             String to = orav.getLatestLogin().format(formatter);
             if (!player.isOp()) {
-                player.kickPlayer("Heute darf nicht mehr gespielt werden! (Nur von " + from + "Uhr bis " + to + "Uhr)");
+                player.kickPlayer("§aHeute darf nicht mehr gespielt werden! (Nur von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
             } else {
                 messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             }
@@ -83,7 +83,7 @@ public class PlayerJoinQuitListener implements Listener {
         sessionObserver.startSession(oravPlayer);
         if (!oravPlayer.isHasValidSession()) {
             if (!player.isOp()) {
-                player.kickPlayer("Deine Spielzeit ist für heute abgelaufen!");
+                player.kickPlayer("§aDeine Spielzeit ist für heute abgelaufen!");
             } else {
                 messageManager.sendMessage(player, "Deine Spielzeit ist abgelaufen! Bitte mach nur administrativen Quatsch!");
             }
