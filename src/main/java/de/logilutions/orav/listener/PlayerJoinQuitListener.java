@@ -95,7 +95,7 @@ public class PlayerJoinQuitListener implements Listener {
         discordUtil.send(
                 null, null, null,
                 Color.GRAY,
-                player.getDisplayName() + " hat den Server betreten.",
+                player.getName() + " hat den Server betreten.",
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
 
@@ -121,7 +121,7 @@ public class PlayerJoinQuitListener implements Listener {
         discordUtil.send(
                 null, null, null,
                 Color.GRAY,
-                player.getDisplayName() + " hat den Server verlassen.",
+                player.getName() + " hat den Server verlassen.",
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
         playerLogoutsConfig.saveLogOutPosition(player.getUniqueId(), player.getLocation());
