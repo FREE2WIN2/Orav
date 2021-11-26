@@ -52,6 +52,7 @@ public class PlayerJoinQuitListener implements Listener {
 
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
+            oravPlayer.getPlayer().kickPlayer("Diesen Server dürfen nur angemeldete Spieler von Minecraft ORAV #5 betreten!");
             return;
         }
         LocalTime now = LocalTime.now();
