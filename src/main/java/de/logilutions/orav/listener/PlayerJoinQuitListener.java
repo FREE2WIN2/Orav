@@ -128,5 +128,4 @@ public class PlayerJoinQuitListener implements Listener {
         oravPlayerManager.removePlayer(oravPlayer.getUuid());
     }
 
-
 }
