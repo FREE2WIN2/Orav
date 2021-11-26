@@ -7,7 +7,9 @@ import org.bukkit.event.world.PortalCreateEvent;
 public class PortalListener implements Listener {
 
     @EventHandler
-    public void onPortalCreate(PortalCreateEvent event){
-        event.setCancelled(true);
+    public void onPortalCreate(PortalCreateEvent event) {
+        if (event.getReason() == PortalCreateEvent.CreateReason.FIRE) {
+            event.setCancelled(true);
+        }
     }
 }

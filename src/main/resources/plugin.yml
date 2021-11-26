@@ -4,12 +4,6 @@ version: 1.0
 main: de.logilutions.orav.OravPlugin
 api-version: 1.17
 commands:
-  generatespawn:
-    description: Generates the ORAV Spawn
-    usage: /generatespawn <numberOfTeams>
-  generatespawncycle:
-    description: Draws a cycle on the ground to correctly place start holes
-    usage: /generatespawncycle <radius>
   leakcoords:
     description: Leaks the specified players current coordinates into discord an ingame chat
     usage: /leakcoords <player>

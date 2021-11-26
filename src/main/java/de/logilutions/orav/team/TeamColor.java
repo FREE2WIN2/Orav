@@ -1,21 +1,18 @@
 package de.logilutions.orav.team;
 
-public enum TeamColor {
-    BLACK,
-    DARK_BLUE,
-    DARK_GREEN,
-    DARK_AQUA,
-    DARK_RED,
-    DARK_PURPLE,
-    GOLD,
-    GRAY,
-    DARK_GRAY,
-    BLUE,
-    GREEN,
-    AQUA,
-    RED,
-    LIGHT_PURPLE,
-    YELLOW,
-    WHITE
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import net.md_5.bungee.api.ChatColor;
 
+
+@AllArgsConstructor
+@Getter
+public class TeamColor {
+   private final Long id;
+   private final String hex;
+   private final String name;
+
+    public ChatColor getChatColor() {
+        return ChatColor.of("#"+hex);
+    }
 }

@@ -50,15 +50,23 @@ public class DatabaseHandler {
 
     public OravTeam readTeam(long teamId) {
         try (Connection connection = databaseConnectionHolder.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM team WHERE id = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT * " +
+                            "FROM team " +
+                            "JOIN color ON color.id = team.fk_color_id " +
+                            "WHERE team.id = ?");
             preparedStatement.setLong(1, teamId);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return new OravTeam(
-                        resultSet.getLong("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("shortname"),
-                        TeamColor.valueOf(resultSet.getString("color"))
+                        resultSet.getLong("team.id"),
+                        resultSet.getString("team.name"),
+                        resultSet.getString("team.shortname"),
+                        new TeamColor(
+                                resultSet.getLong("color.id"),
+                                resultSet.getString("color.hexcode"),
+                                resultSet.getString("color.name")
+                        )
                 );
             }
         } catch (SQLException e) {
@@ -66,6 +74,7 @@ public class DatabaseHandler {
         }
         return null;
     }
+
 
     public Orav readOrav(long oravId) {
         try (Connection connection = databaseConnectionHolder.getConnection()) {
@@ -79,13 +88,27 @@ public class DatabaseHandler {
                         resultSet.getLong("play_time") * 60 * 1000,
                         resultSet.getObject("start_date", LocalDateTime.class),
                         resultSet.getObject("earliest_login", LocalTime.class),
-                        resultSet.getObject("latest_login", LocalTime.class)
+                        resultSet.getObject("latest_login", LocalTime.class),
+                        Orav.State.valueOf(resultSet.getString("state")),
+                        resultSet.getLong("protection_time"),
+                        resultSet.getLong("protection_time_after")
                 );
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void updateOrav(Orav orav) {
+        try (Connection connection = databaseConnectionHolder.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE orav SET state = ? WHERE id = ?");
+            preparedStatement.setString(1, orav.getState().name());
+            preparedStatement.setLong(2, orav.getId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public OravPlayer getTeamMate(OravPlayer oravPlayer) {
@@ -180,5 +203,23 @@ public class DatabaseHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<OravPlayer> getAllPlayers(long oravId) {
+        List<OravPlayer> oravPlayers = new ArrayList<>();
+        try (Connection connection = databaseConnectionHolder.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT player.id, uuid, fk_team_id, dropped_out" +
+                            " FROM player,team" +
+                            " WHERE fk_orav_id = ? AND player.fk_team_id = team.id");
+            preparedStatement.setLong(1, oravId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                oravPlayers.add(makeOravPlayerFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return oravPlayers;
     }
 }

@@ -14,15 +14,17 @@ import java.util.function.Consumer;
 public class SessionOverRunnable implements Runnable {
     private final OravPlayer oravPlayer;
     private final Consumer<OravPlayer> onEnd;
-    private final PotionEffect potionEffect = PotionEffectType.BLINDNESS.createEffect(80,255);
+    private final PotionEffect potionEffect = new PotionEffect(PotionEffectType.BLINDNESS, 80, 255, false, false, false);
+
     @Override
     public void run() {
+
         Player player = oravPlayer.getPlayer();
         if (player == null) {
             onEnd.accept(oravPlayer);
             return;
         }
-        if(!oravPlayer.isHasValidSession()){
+        if (!oravPlayer.isHasValidSession()) {
             player.addPotionEffect(potionEffect);
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cDeine Spielzeit ist abgelaufen!"));
         }

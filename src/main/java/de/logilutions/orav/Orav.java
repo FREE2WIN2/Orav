@@ -17,4 +17,14 @@ public class Orav {
     private final LocalDateTime startDate;
     private final LocalTime earlyLogin;
     private final LocalTime latestLogin;
+    private final State state;
+    private final long protectionTime;
+    private final long protectionTimeAfterDayOne;
+
+    public enum State{
+        DEVELOPING,
+        PREPARATION,
+        RUNNING,
+        OVER
+    }
 }

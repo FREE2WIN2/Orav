@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Getter
@@ -24,6 +25,8 @@ public class OravPlayer {
     private boolean hasValidSession;
     @Setter
     private boolean inFight;
+    @Setter
+    private LocalDateTime protectedUntil = null;
     public OravPlayer(Long id, OravTeam oravTeam, UUID uuid, boolean droppedOut) {
         this.id = id;
         this.oravTeam = oravTeam;

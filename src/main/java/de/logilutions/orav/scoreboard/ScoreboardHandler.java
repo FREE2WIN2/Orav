@@ -16,6 +16,7 @@ public class ScoreboardHandler {
     private final OravPlayerManager oravPlayerManager;
 
     public void playerSpawned(Player player) {
+        System.out.println("player spawned");
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
             return;
@@ -63,10 +64,10 @@ public class ScoreboardHandler {
         if (oravTeam == null) {
             return;
         }
-        ChatColor color = ChatColor.valueOf(oravTeam.getTeamColor().name());
+        net.md_5.bungee.api.ChatColor color = oravTeam.getTeamColor().getChatColor();
         String teamName = oravTeam.getShortName();
         Team team = scoreboard.getTeam(teamName);
-        String prefix = color + oravTeam.getShortName() + " §7| ";
+        String prefix = color.toString() + oravTeam.getShortName() + " §7| ";
         if (team == null) {
             team = scoreboard.registerNewTeam(teamName);
             team.setPrefix(prefix);

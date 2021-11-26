@@ -4,7 +4,6 @@ import de.logilutions.orav.Orav;
 import de.logilutions.orav.config.PlayerLogoutsConfig;
 import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.discord.DiscordUtil;
-import de.logilutions.orav.discord.DiscordWebhook;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.scoreboard.ScoreboardHandler;
@@ -13,19 +12,14 @@ import de.logilutions.orav.util.Helper;
 import de.logilutions.orav.util.MessageManager;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.awt.*;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -41,6 +35,19 @@ public class PlayerJoinQuitListener implements Listener {
     private final PlayerLogoutsConfig playerLogoutsConfig;
     private final Helper helper;
     private final MessageManager messageManager;
+    private final DatabaseHandler databaseHandler;
+
+    @EventHandler
+    private void onLogin(AsyncPlayerPreLoginEvent event) {
+        if (orav == null) {
+            return;
+        }
+        OravPlayer oravPlayer = oravPlayerManager.getPlayer(event.getUniqueId());
+        if (oravPlayer == null) {
+            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
+            event.setKickMessage("Diesen Server dürfen nur angemeldete Spieler von Minecraft ORAV #5 betreten!");
+        }
+    }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -48,13 +55,11 @@ public class PlayerJoinQuitListener implements Listener {
         if (orav == null) {
             return;
         }
-
-
-        OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
-        if (oravPlayer == null) {
-            oravPlayer.getPlayer().kickPlayer("Diesen Server dürfen nur angemeldete Spieler von Minecraft ORAV #5 betreten!");
+        if (orav.getState() == Orav.State.DEVELOPING && !player.isOp()) {
+            player.kickPlayer("Minecraft ORAV #5 hat noch nicht gestartet!");
             return;
         }
+        OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         LocalTime now = LocalTime.now();
         if (orav.getEarlyLogin().isAfter(now) && orav.getLatestLogin().isBefore(now)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -65,6 +70,7 @@ public class PlayerJoinQuitListener implements Listener {
             } else {
                 messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
             }
+            event.setJoinMessage("");
             return;
         }
 
@@ -79,8 +85,9 @@ public class PlayerJoinQuitListener implements Listener {
             if (!player.isOp()) {
                 player.kickPlayer("Deine Spielzeit ist für heute abgelaufen!");
             } else {
-                messageManager.sendMessage(player, "Deine Spielzeit ist abgelaufen! Bitte mach nur Administrativen quatsch!");
+                messageManager.sendMessage(player, "Deine Spielzeit ist abgelaufen! Bitte mach nur administrativen Quatsch!");
             }
+            event.setJoinMessage("");
             return;
         }
         scoreboardHandler.playerSpawned(player);
@@ -91,6 +98,11 @@ public class PlayerJoinQuitListener implements Listener {
                 player.getDisplayName() + " hat den Server betreten.",
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
+
+
+        if(databaseHandler.getSessions(oravPlayer).size() == 1){
+
+        }
     }
 
     @EventHandler
