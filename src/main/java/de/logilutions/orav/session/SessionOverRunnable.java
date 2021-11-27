@@ -24,7 +24,7 @@ public class SessionOverRunnable implements Runnable {
             onEnd.accept(oravPlayer);
             return;
         }
-        if (!oravPlayer.isHasValidSession()) {
+        if (!oravPlayer.isHasValidSession() && !oravPlayer.isOravAdmin()) {
             player.addPotionEffect(potionEffect);
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cDeine Spielzeit ist abgelaufen!"));
         }

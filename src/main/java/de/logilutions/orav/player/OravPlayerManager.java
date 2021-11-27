@@ -23,6 +23,9 @@ public class OravPlayerManager {
             if(oravPlayer == null){
                 return null;
             }
+            if(orav.getState() == Orav.State.PROTECTION){
+                oravPlayer.setFightProtected(true);
+            }
             playerMap.put(uuid, oravPlayer);
         }
         return oravPlayer;

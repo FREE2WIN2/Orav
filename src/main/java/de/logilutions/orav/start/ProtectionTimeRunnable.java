@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Consumer;
 
 public class ProtectionTimeRunnable implements Runnable {
@@ -22,22 +23,30 @@ public class ProtectionTimeRunnable implements Runnable {
     private long remainingMillis;
     private long lastSystemMillis = System.currentTimeMillis();
     private final MessageManager messageManager;
-    private final Consumer<OravPlayer> onEnd;
-    private final OravPlayer player;
+    private final Consumer<Void> onEnd;
     private BossBar bossBar;
+    private final Collection<OravPlayer> oravPlayers;
 
-    public ProtectionTimeRunnable(long remainingMillis, MessageManager messageManager, OravPlayer oravPlayer, Consumer<OravPlayer> onEnd) {
+    public ProtectionTimeRunnable(long remainingMillis, MessageManager messageManager, Collection<OravPlayer> oravPlayers, Consumer<Void> onEnd) {
         this.remainingMillis = remainingMillis + 1;
         this.startMillis = this.remainingMillis;
         this.messageManager = messageManager;
         this.onEnd = onEnd;
-        this.player = oravPlayer;
-        Player player = oravPlayer.getPlayer();
-        if (player != null) {
-            this.bossBar = Bukkit.createBossBar("§7Verbleibende Schutzzeit: §6" + remainingMillis / (60 * 1000) + " Minuten", BarColor.RED, BarStyle.SEGMENTED_20);
-            bossBar.addPlayer(player);
+        this.oravPlayers = oravPlayers;
+        this.bossBar = Bukkit.createBossBar("§7Verbleibende Schutzzeit: §6" + remainingMillis / (60 * 1000) + " Minuten", BarColor.RED, BarStyle.SEGMENTED_20);
+        for (OravPlayer oravPlayer : oravPlayers) {
+            addPlayer(oravPlayer);
         }
+    }
+
+    public void addPlayer(OravPlayer oravPlayer) {
+        Player player = oravPlayer.getPlayer();
+        if(player == null){
+            return;
+        }
+        this.oravPlayers.add(oravPlayer);
         oravPlayer.setFightProtected(true);
+        this.bossBar.addPlayer(player);
     }
 
     @Override
@@ -47,54 +56,65 @@ public class ProtectionTimeRunnable implements Runnable {
         long delta = currentSystemMillis - lastSystemMillis;
         lastSystemMillis = currentSystemMillis;
         remainingMillis -= delta;
-        Player p = player.getPlayer();
-        if (p == null) {
-            onEnd.accept(player);
-            return;
-        }
         if (remainingMillis <= 30 * 60 * 1000 && lastRemaining > 30 * 60 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in %hc%30 Minuten§7!");
+            sendMessage("Die Schutzzeit endet in %hc%30 Minuten§7!");
         }
 
         if (remainingMillis <= 15 * 60 * 1000 && lastRemaining > 15 * 60 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in %hc%15 Minuten§7!");
+            sendMessage("Die Schutzzeit endet in %hc%15 Minuten§7!");
         }
 
         if (remainingMillis <= 10 * 60 * 1000 && lastRemaining > 10 * 60 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in %hc%10 Minuten§7!");
+            sendMessage("Die Schutzzeit endet in %hc%10 Minuten§7!");
         }
 
         if (remainingMillis <= 5 * 60 * 1000 && lastRemaining > 5 * 60 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in %hc%5 Minuten§7!");
+            sendMessage("Die Schutzzeit endet in %hc%5 Minuten§7!");
         }
 
         if (remainingMillis <= 60 * 1000 && lastRemaining > 60 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%1 Minute§7!");
+            sendMessage("Die Schutzzeit endet in%hc%1 Minute§7!");
         }
 
         if (remainingMillis <= 30 * 1000 && lastRemaining > 30 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%30 Sekunden§7!");
+            sendMessage("Die Schutzzeit endet in%hc%30 Sekunden§7!");
         }
 
         if (remainingMillis <= 10 * 1000 && lastRemaining > 10 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%10 Sekunden§7!");
+            sendMessage("Die Schutzzeit endet in%hc%10 Sekunden§7!");
         }
 
         if (remainingMillis <= 3 * 1000 && lastRemaining > 3 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%3 Sekunden§7!");
+            sendMessage("Die Schutzzeit endet in%hc%3 Sekunden§7!");
         }
 
         if (remainingMillis <= 2 * 1000 && lastRemaining > 2 * 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%2 Sekunden§7!");
+            sendMessage("Die Schutzzeit endet in%hc%2 Sekunden§7!");
         }
 
         if (remainingMillis <= 1000 && lastRemaining > 1000) {
-            messageManager.sendMessage(p, "Die Schutzzeit endet in%hc%1 Sekunde§7!");
+            sendMessage("Die Schutzzeit endet in%hc%1 Sekunde§7!");
         }
-        updateBossBar();
         if (remainingMillis <= 0) {
-           removeBossBar();
-            onEnd.accept(player);
+            removeBossBar();
+            for(OravPlayer oravPlayer:oravPlayers){
+                oravPlayer.setFightProtected(false);
+            }
+            sendMessage("Die Schutzzeit ist nun vorbei!");
+            onEnd.accept(null);
+        }else{
+        updateBossBar();
+        }
+    }
+
+    private void sendMessage(String s) {
+        for (OravPlayer oravPlayer : oravPlayers) {
+            Player player = oravPlayer.getPlayer();
+            if (player == null) {
+                oravPlayers.remove(oravPlayer);
+            } else {
+                messageManager.sendMessage(player, s);
+            }
         }
     }
 
@@ -119,6 +139,6 @@ public class ProtectionTimeRunnable implements Runnable {
             }
             bossBar.setTitle("§7Verbleibende Schutzzeit: §6" + builder.toString());
         }
-        bossBar.setProgress((float) remainingMillis / (float)startMillis);
+        bossBar.setProgress((float) remainingMillis / (float) startMillis);
     }
 }

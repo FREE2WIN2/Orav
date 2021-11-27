@@ -18,9 +18,9 @@ import java.io.File;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,7 +38,10 @@ public class OravStart extends Config {
     private final Map<UUID, LocalDateTime> protectedUntil = new HashMap<>();
     private final SessionObserver sessionObserver;
     private final DiscordUtil discordUtil;
-    private boolean oravStartMessageSend = true;
+    private Scheduler countdownScheduler;
+    private Scheduler protectionScheduler;
+    private ProtectionTimeRunnable protectionTimeRunnable;
+    private StartCountDownRunnable startCountDownRunnable;
 
     public OravStart(File file, Orav orav, Location middleLocation, SpawnGenerator spawnGenerator, int radius, DatabaseHandler databaseHandler, JavaPlugin javaPlugin, MessageManager messageManager, OravPlayerManager oravPlayerManager, SessionObserver sessionObserver, DiscordUtil discordUtil) {
         super(file);
@@ -62,41 +65,24 @@ public class OravStart extends Config {
         }
     }
 
-    public void startOrav(Player player, boolean countdown) {
+    public void startOrav(Player player) {
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
             return;
         }
         player.getInventory().clear();
         player.teleport(getLocation(oravPlayer));
-        LocalDateTime until = LocalDateTime.now().plus(orav.getProtectionTime() + 5, ChronoUnit.MINUTES);
-        protectedUntil.put(player.getUniqueId(), until);
-
-        if (countdown) {
+        if (orav.getState() == Orav.State.COUNTDOWN) {
             player.setGameMode(GameMode.ADVENTURE);
-            Scheduler scheduler = new Scheduler();
-            scheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimerAsynchronously(
-                    javaPlugin,
-                    new StartCountDownRunnable(messageManager, player, (player1) -> {
-                        Bukkit.getScheduler().runTask(javaPlugin, () -> {
-                            startProtectionTime(player);
-                            player.setGameMode(GameMode.SURVIVAL);
-                            player.setHealth(20);
-                            player.setFoodLevel(20);
-                            player.setStatistic(Statistic.TIME_SINCE_REST, 0);
-                            player.getInventory().clear();
-                            if (!oravStartMessageSend) {
-                                oravStartMessageSend = true;
-                                discordUtil.send(
-                                        "Minecraft ORAV #5", "Das Projekt Minecraft Orav #5 hat soeben begonnen!", "https://logilutions.de/Minecraft/ORAV-5/images/start.png",
-                                        Color.GREEN, null, null, null);
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "weather clear");
-                            }
-                        });
-                        scheduler.cancel();
-                    }),
-                    0, 20));
+            if (startCountDownRunnable != null) {
+                startCountDownRunnable.addPlayer(player);
+            }
+        } else if (orav.getState() == Orav.State.PROTECTION) {
+            player.setGameMode(GameMode.SURVIVAL);
+            startProtectionTime(player);
         } else {
+            player.setGameMode(GameMode.SURVIVAL);
+            protectedUntil.remove(player.getUniqueId());
             startProtectionTime(player);
         }
     }
@@ -105,33 +91,91 @@ public class OravStart extends Config {
         if (orav.getState() == Orav.State.RUNNING || orav.getState() == Orav.State.OVER) {
             return;
         }
-        oravStartMessageSend = false;
-        World world = Bukkit.getWorlds().get(0);
-        world.setDifficulty(Difficulty.NORMAL);
-        world.setGameRule(GameRule.DO_WEATHER_CYCLE, true);
-        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
-        world.setClearWeatherDuration(20*60*20);
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a everything");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "weather clear");
-        orav.setState(Orav.State.RUNNING);
+        generateLocations();
+        for (OravPlayer oravPlayer : oravPlayerManager.getAll()) {
+            Player player = oravPlayer.getPlayer();
+            if (player == null) {
+                continue;
+            }
+            player.getInventory().clear();
+            player.teleport(getLocation(oravPlayer));
+        }
+        orav.setState(Orav.State.COUNTDOWN);
         databaseHandler.updateOrav(orav);
 
-        generateLocations();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            startOrav(player, true);
-        }
+        countdownScheduler = new Scheduler();
+        startCountDownRunnable = new StartCountDownRunnable(messageManager, (player1) -> {
+            Bukkit.getScheduler().runTask(javaPlugin, () -> {
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.setGameMode(GameMode.SURVIVAL);
+                    player.setHealth(20);
+                    player.setFoodLevel(20);
+                    player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+                    player.getInventory().clear();
+                    player.playSound(player.getLocation(), Sound.ENTITY_WITHER_SPAWN, 1, 1);
+                    messageManager.sendMessage(player, "Orav5 ist gestartet!");
+                    messageManager.sendTitle(player, "§5Orav 5", "§7gestartet!");
+                }
+                startProtectionTime();
+                discordUtil.send(
+                        "Minecraft ORAV #5", "Das Projekt Minecraft Orav #5 hat soeben begonnen!", "https://logilutions.de/Minecraft/ORAV-5/images/start.png",
+                        Color.GREEN, null, null, null);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "weather clear");
+            });
+            countdownScheduler.cancel();
+        });
+
+        countdownScheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimerAsynchronously(
+                javaPlugin,
+                startCountDownRunnable,
+                0, 20));
     }
 
     private Location getLocation(OravPlayer oravPlayer) {
         return this.startLocation.get(oravPlayer.getUuid()).clone().add(0.5, 0, 0.5);
     }
 
+    public void startProtectionTime() {
+        World world = Bukkit.getWorlds().get(0);
+        world.setDifficulty(Difficulty.NORMAL);
+        world.setGameRule(GameRule.DO_WEATHER_CYCLE, true);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
+        world.setClearWeatherDuration(20 * 60 * 20);
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a everything");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "weather clear");
+
+        for (OravPlayer oravPlayer : oravPlayerManager.getAll()) {
+            oravPlayer.setFightProtected(true);
+            sessionObserver.startSession(oravPlayer);
+        }
+        orav.setState(Orav.State.PROTECTION);
+        databaseHandler.updateOrav(orav);
+        long millis = orav.getProtectionTime() * 60 * 1000;
+        protectionTimeRunnable = new ProtectionTimeRunnable(
+                millis,
+                messageManager,
+                new HashSet<>(oravPlayerManager.getAll()),
+                v -> {
+                    orav.setState(Orav.State.RUNNING);
+                    databaseHandler.updateOrav(orav);
+                    protectionScheduler.cancel();
+                }
+        );
+
+        protectionScheduler = new Scheduler();
+        protectionScheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimerAsynchronously(javaPlugin, protectionTimeRunnable, 0, 20));
+    }
+
     public void startProtectionTime(Player player) {
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
+        if (orav.getState() == Orav.State.PROTECTION && protectionTimeRunnable != null) {
+            protectionTimeRunnable.addPlayer(oravPlayer);
+            return;
+        }
         if (oravPlayer == null) {
             return;
         }
-        sessionObserver.startSession(oravPlayer);
+
         long millis = 0;
         if (protectedUntil.containsKey(player.getUniqueId())) {
             Duration remainig = Duration.between(LocalDateTime.now(), protectedUntil.get(player.getUniqueId()));
@@ -155,8 +199,8 @@ public class OravStart extends Config {
         scheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimerAsynchronously(javaPlugin, new ProtectionTimeRunnable(
                 millis,
                 messageManager,
-                oravPlayer,
-                oravPlayer1 -> oravPlayer1.setFightProtected(false)
+                new HashSet<>(oravPlayerManager.getAll()),
+                v -> scheduler.cancel()
         ), 0, 20));
     }
 

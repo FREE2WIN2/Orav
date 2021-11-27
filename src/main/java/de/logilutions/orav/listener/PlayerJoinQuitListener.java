@@ -80,6 +80,14 @@ public class PlayerJoinQuitListener implements Listener {
             event.setJoinMessage(player.getDisplayName() + "§e hat den Server betreten!");
             return;
         }
+        if(orav.getState() == Orav.State.COUNTDOWN){
+            oravStart.startOrav(player);
+            oravPlayer.setHasValidSession(true);
+            scoreboardHandler.playerSpawned(player);
+            event.setJoinMessage(player.getDisplayName() + "§e hat den Server betreten!");
+            return;
+        }
+
 
         LocalTime now = LocalTime.now();
         if (orav.getEarlyLogin().isAfter(now) && orav.getLatestLogin().isBefore(now)) {
@@ -122,9 +130,9 @@ public class PlayerJoinQuitListener implements Listener {
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
 
-        if (databaseHandler.getSessions(oravPlayer).size() == 1 && orav.getState() == Orav.State.RUNNING) {
+        if (databaseHandler.getSessions(oravPlayer).size() == 1 && (orav.getState() == Orav.State.RUNNING||orav.getState() == Orav.State.PROTECTION)) {
             System.out.println("start ORav for Player " + player.getName());
-            oravStart.startOrav(player, false);
+            oravStart.startOrav(player);
         } else {
             oravStart.startProtectionTime(player);
         }
@@ -144,6 +152,11 @@ public class PlayerJoinQuitListener implements Listener {
                 event.setQuitMessage("");
             }
         }
+        if(orav.getState() == Orav.State.PREPARATION){
+            oravPlayerManager.removePlayer(player.getUniqueId());
+            return;
+        }
+
 
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
         if (oravPlayer == null) {
@@ -152,6 +165,7 @@ public class PlayerJoinQuitListener implements Listener {
         }
         if (!oravPlayer.isJoined()) {
             event.setQuitMessage("");
+            oravPlayerManager.removePlayer(oravPlayer.getUuid());
             return;
         }
         sessionObserver.endSession(oravPlayer);

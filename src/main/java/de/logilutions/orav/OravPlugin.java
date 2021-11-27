@@ -84,14 +84,14 @@ public class OravPlugin extends JavaPlugin {
         }
         TabList tabList = new TabList();
         this.discordUtil = new DiscordUtil("https://discord.com/api/webhooks/912863008508760095/PYhV2onPsh-geKovWFeOSIWUt7_kh8rO27gTV796jtOIFHNyQz6kXEpxZPRxC2-dKDUh");
-        this.scoreboardHandler = new ScoreboardHandler(this.oravPlayerManager, tabList);
-        this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig,orav);
+        this.scoreboardHandler = new ScoreboardHandler(this.oravPlayerManager, tabList, orav,this,databaseHandler);
+        this.fightingObserver = new FightingObserver(this, oravPlayerManager, this.messageManager, playerFightLogoutConfig, orav);
         //TODO radius per config
         int x = config.getInt("start-spawn.x");
         int y = config.getInt("start-spawn.y");
         int z = config.getInt("start-spawn.z");
-        Location middle = new Location(Bukkit.getWorlds().get(0),x,y,z);
-        this.oravStart = new OravStart(new File(getDataFolder(),"oravStartLocations.yml"),orav,middle,new SpawnGenerator(),25,databaseHandler,this,messageManager,oravPlayerManager,sessionObserver, discordUtil);
+        Location middle = new Location(Bukkit.getWorlds().get(0), x, y, z);
+        this.oravStart = new OravStart(new File(getDataFolder(), "oravStartLocations.yml"), orav, middle, new SpawnGenerator(), 25, databaseHandler, this, messageManager, oravPlayerManager, sessionObserver, discordUtil);
 
         initCommands();
         registerListener();
@@ -103,11 +103,13 @@ public class OravPlugin extends JavaPlugin {
         PluginManager pm = Bukkit.getPluginManager();
         if (orav != null) {
             pm.registerEvents(new PlayerDeathListener(discordUtil, oravPlayerManager, databaseHandler, helper), this);
-            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager, this.databaseHandler,oravStart), this);
+            pm.registerEvents(new PlayerJoinQuitListener(discordUtil, oravPlayerManager, orav, sessionObserver, scoreboardHandler, playerLogoutsConfig, this.helper, this.messageManager, this.databaseHandler, oravStart), this);
             pm.registerEvents(new PlayerSessionListener(oravPlayerManager, this.helper), this);
-            pm.registerEvents(new PortalListener(orav), this);
+            pm.registerEvents(new PortalListener(oravPlayerManager), this);
             pm.registerEvents(new PlayerChatListener(), this);
             pm.registerEvents(new TeamChestListener(oravPlayerManager, teamChestManager, messageManager, databaseHandler), this);
+            pm.registerEvents(new PreparingListener(orav), this);
+
             fightingObserver.start();
         }
     }
@@ -125,7 +127,7 @@ public class OravPlugin extends JavaPlugin {
     private void initCommands() {
         getCommand("leakcoords").setExecutor(new LeakCoords(messageManager, discordUtil));
         if (sessionObserver != null) {
-            OravCommand oravCommand = new OravCommand(this.messageManager, oravPlayerManager, sessionObserver,oravStart,orav,databaseHandler);
+            OravCommand oravCommand = new OravCommand(this.messageManager, oravPlayerManager, sessionObserver, oravStart, orav, databaseHandler);
             getCommand("orav").setExecutor(oravCommand);
             getCommand("orav").setTabCompleter(oravCommand);
         }

@@ -31,42 +31,48 @@ public class OravCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if(!(commandSender instanceof Player) || !commandSender.isOp()){
+        if (!(commandSender instanceof Player) || !commandSender.isOp()) {
             return true;
         }
         Player player = (Player) commandSender;
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
-        if(oravPlayer == null){
-            messageManager.sendMessage(player,"Du bist kein Orav Player!");
+        if (oravPlayer == null) {
+            messageManager.sendMessage(player, "Du bist kein Orav Player!");
             return true;
         }
-        if(args.length == 1){
-            switch (args[0].toLowerCase()){
+        if (args.length == 1) {
+            switch (args[0].toLowerCase()) {
                 case "admin":
-                    oravPlayerManager.getPlayer(player.getUniqueId()).setHasValidSession(true);
-                    player.setGameMode(GameMode.CREATIVE);
-                    messageManager.sendMessage(player,"Du bist jetzt im Admin Mode!");
+                    if (oravPlayer.isOravAdmin()) {
+                        oravPlayer.setOravAdmin(false);
+                        messageManager.sendMessage(player, "Du bist nicht mehr im Admin Mode!");
+                    } else {
+                        oravPlayer.setOravAdmin(true);
+                        player.setGameMode(GameMode.CREATIVE);
+                        messageManager.sendMessage(player, "Du bist jetzt im Admin Mode!");
+                    }
+
                     break;
                 case "invalidatesession":
                     sessionObserver.endSession(oravPlayerManager.getPlayer(player.getUniqueId()));
-                    messageManager.sendMessage(player,"Du has deine Session beendet!");
+                    messageManager.sendMessage(player, "Du has deine Session beendet!");
                     break;
                 case "start":
-                    if(orav.getState() != Orav.State.PREPARATION){
-                        messageManager.sendMessage(player,"%ec%Orav wurde bereits gestartet!");
+                    if (orav.getState() != Orav.State.PREPARATION) {
+                        messageManager.sendMessage(player, "%ec%Orav wurde bereits gestartet!");
                         return true;
                     }
                     oravStart.startOrav();
-                    messageManager.sendMessage(player,"Orav wurde gestartet!");
+                    messageManager.sendMessage(player, "Orav wurde gestartet!");
                     break;
                 case "preparation":
-                    if(orav.getState() != Orav.State.DEVELOPING){
-                        messageManager.sendMessage(player,"%ec%Orav wurde bereits in die Vorbereitungsphase gesetzt!");
+                    if (orav.getState() != Orav.State.DEVELOPING) {
+                        messageManager.sendMessage(player, "%ec%Orav wurde bereits in die Vorbereitungsphase gesetzt!");
                         return true;
                     }
                     orav.setState(Orav.State.PREPARATION);
                     databaseHandler.updateOrav(orav);
-                    messageManager.sendMessage(player,"Orav wurde gestartet!");
+                    messageManager.sendMessage(player, "Orav wurde gestartet!");
                     break;
             }
         }
@@ -76,16 +82,16 @@ public class OravCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
         List<String> list = new ArrayList<>();
-        if(!(commandSender instanceof Player) || !commandSender.isOp()){
+        if (!(commandSender instanceof Player) || !commandSender.isOp()) {
             return list;
         }
         Player player = (Player) commandSender;
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(player.getUniqueId());
-        if(oravPlayer == null){
-            messageManager.sendMessage(player,"Du bist kein Orav Player!");
+        if (oravPlayer == null) {
+            messageManager.sendMessage(player, "Du bist kein Orav Player!");
             return list;
         }
-        if(strings.length == 1){
+        if (strings.length == 1) {
             list.add("admin");
             list.add("invalidateSession");
             list.add("preparation");

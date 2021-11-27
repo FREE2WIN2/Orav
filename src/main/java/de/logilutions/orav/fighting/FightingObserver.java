@@ -128,7 +128,7 @@ public class FightingObserver implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-        if (orav != null && orav.getState() != Orav.State.RUNNING) {
+        if (orav == null) {
             event.setCancelled(true);
             return;
         }

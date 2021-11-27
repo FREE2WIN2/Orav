@@ -222,4 +222,22 @@ public class DatabaseHandler {
         }
         return oravPlayers;
     }
+
+    public Collection<OravPlayer> getRemainingPlayers(long oravId) {
+        List<OravPlayer> oravPlayers = new ArrayList<>();
+        try (Connection connection = databaseConnectionHolder.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT player.id, uuid, fk_team_id, dropped_out" +
+                            " FROM player,team" +
+                            " WHERE fk_orav_id = ? AND player.fk_team_id = team.id AND dropped_out = 0");
+            preparedStatement.setLong(1, oravId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                oravPlayers.add(makeOravPlayerFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return oravPlayers;
+    }
 }

@@ -35,7 +35,7 @@ public class PlayerSessionListener implements Listener {
 
     private void handleEvent(UUID uuid, Cancellable cancellable) {
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(uuid);
-        if (oravPlayer != null && !oravPlayer.isHasValidSession()) {
+        if (oravPlayer != null && !oravPlayer.isHasValidSession() && !oravPlayer.isOravAdmin()) {
             cancellable.setCancelled(true);
         }
     }

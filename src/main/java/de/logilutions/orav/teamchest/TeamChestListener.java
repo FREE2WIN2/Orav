@@ -6,10 +6,8 @@ import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.team.OravTeam;
 import de.logilutions.orav.util.MessageManager;
 import lombok.RequiredArgsConstructor;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,8 +15,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryHolder;
 
 @RequiredArgsConstructor
 public class TeamChestListener implements Listener {
@@ -40,12 +40,12 @@ public class TeamChestListener implements Listener {
         if (clickedBlock.getType() != Material.CHEST) {
             return;
         }
-        Long teamId = teamChestManager.getTeamOfChest(clickedBlock.getLocation());
-        if (teamId != null && !oravPlayer.getOravTeam().getId().equals(teamId)) {
+        Long teamId = getTeamIdOfBlock(clickedBlock);
+        if (!hasChestAccess(oravPlayer, teamId)) {
             event.setCancelled(true);
             OravTeam oravTeam = databaseHandler.readTeam(teamId);
             event.getPlayer().sendMessage(messageManager.getPrefix() + " " + "Das ist die TeamKiste von "
-                    + oravTeam.getTeamColor().getChatColor().toString()  + oravTeam.getName());
+                    + oravTeam.getTeamColor().getChatColor().toString() + oravTeam.getName());
         }
     }
 
@@ -77,12 +77,26 @@ public class TeamChestListener implements Listener {
 
     @EventHandler
     private void onBlockBreak(BlockBreakEvent event) {
+        OravPlayer oravPlayer = oravPlayerManager.getPlayer(event.getPlayer().getUniqueId());
+        if (oravPlayer == null) {
+            event.setCancelled(true);
+            return;
+        }
         Block block = event.getBlock();
         if (block.getType() != Material.CHEST) {
             return;
         }
-        teamChestManager.removeChest(block.getLocation());
+        Long teamId = getTeamIdOfBlock(block);
+        if (hasChestAccess(oravPlayer, teamId)) {
+            teamChestManager.removeChest(block.getLocation());
+        } else {
+            event.setCancelled(true);
+            OravTeam oravTeam = databaseHandler.readTeam(teamId);
+            event.getPlayer().sendMessage(messageManager.getPrefix() + " " + "Das ist die TeamKiste von "
+                    + oravTeam.getTeamColor().getChatColor().toString() + oravTeam.getName());
+        }
     }
+
 
     @EventHandler
     private void onBlockBreak(BlockBurnEvent event) {
@@ -92,4 +106,52 @@ public class TeamChestListener implements Listener {
         }
         teamChestManager.removeChest(block.getLocation());
     }
+
+    @EventHandler
+    private void onExplosion(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> {
+            if (block.getType() == Material.CHEST) {
+                if (getTeamIdOfBlock(block) != null) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    private boolean hasChestAccess(OravPlayer oravPlayer, Long teamId) {
+        if (teamId == null) {
+            return true;
+        }
+        return oravPlayer.getOravTeam().getId().equals(teamId) || oravPlayer.isOravAdmin();
+    }
+
+    private boolean hasChestAccess(OravPlayer oravPlayer, Block block) {
+        Long teamId = getTeamIdOfBlock(block);
+        return hasChestAccess(oravPlayer, teamId);
+    }
+
+    private Long getTeamIdOfBlock(Block block) {
+        Long teamId = null;
+        BlockState blockState = block.getState();
+        if (!(blockState instanceof Chest)) {
+            return null;
+        }
+        Chest chest = (Chest) blockState;
+        InventoryHolder inventoryHolder = chest.getInventory().getHolder();
+        System.out.println("block instance of Doublechest? " + (chest.getInventory().getHolder() instanceof DoubleChest));
+        if (inventoryHolder instanceof DoubleChest) {
+            DoubleChest doubleChest = (DoubleChest) inventoryHolder;
+            Chest left = (Chest) doubleChest.getLeftSide();
+            Chest right = (Chest) doubleChest.getRightSide();
+            teamId = teamChestManager.getTeamOfChest(left.getLocation());
+            if (teamId == null) {
+                teamId = teamChestManager.getTeamOfChest(right.getLocation());
+            }
+        } else {
+            teamId = teamChestManager.getTeamOfChest(chest.getLocation());
+        }
+        return teamId;
+    }
+
 }

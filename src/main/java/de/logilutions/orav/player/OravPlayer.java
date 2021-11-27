@@ -25,7 +25,7 @@ public class OravPlayer {
     private boolean inFight;
     private boolean fightProtected = false;
     private boolean joined = true;
-
+    private boolean oravAdmin = false;
     public OravPlayer(Long id, OravTeam oravTeam, UUID uuid, boolean droppedOut) {
         this.id = id;
         this.oravTeam = oravTeam;

@@ -27,6 +27,8 @@ public class Orav {
     public enum State{
         DEVELOPING,
         PREPARATION,
+        COUNTDOWN,
+        PROTECTION,
         RUNNING,
         OVER
     }

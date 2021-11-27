@@ -11,7 +11,7 @@ public class TabList {
 
     private Map<Integer, String> messages = new HashMap<>(); //TODO config
     private int currentMessage = 0;
-    private String header = "\n§7Minecraft §5ORAV 5\n";
+    private String header = "\n§2Minecraft §5ORAV 5\n";
 
     public TabList() {
         messages.put(0, "\n          §7Sponsored by FREE2WIN          \n");
