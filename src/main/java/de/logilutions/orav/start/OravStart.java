@@ -67,15 +67,17 @@ public class OravStart extends Config {
             Scheduler scheduler = new Scheduler();
             scheduler.setBukkitTask(Bukkit.getScheduler().runTaskTimerAsynchronously(
                     javaPlugin,
-                    new StartCountDownRunnable(messageManager,player, (player1) -> {
+                    new StartCountDownRunnable(messageManager, player, (player1) -> {
                         scheduler.cancel();
                         startProtectionTime(player);
-                        player.setGameMode(GameMode.SURVIVAL);
-                        player.setHealth(20);
-                        player.setFoodLevel(20);
-                        player.setStatistic(Statistic.TIME_SINCE_REST, 0);
-                        player.getInventory().clear();
-                        Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
+                        Bukkit.getScheduler().runTask(javaPlugin, () -> {
+                            player.setGameMode(GameMode.SURVIVAL);
+                            player.setHealth(20);
+                            player.setFoodLevel(20);
+                            player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+                            player.getInventory().clear();
+                            Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
+                        });
                     }),
                     0, 20));
         } else {
@@ -101,7 +103,7 @@ public class OravStart extends Config {
     }
 
     private Location getLocation(OravPlayer oravPlayer) {
-        return this.startLocation.get(oravPlayer.getUuid()).clone().add(0.5,0,0.5);
+        return this.startLocation.get(oravPlayer.getUuid()).clone().add(0.5, 0, 0.5);
     }
 
     private void startProtectionTime(Player player) {
@@ -135,6 +137,7 @@ public class OravStart extends Config {
     }
 
     public void generateLocations() {
+        clear();
         this.startLocation = spawnGenerator.generateLocations(databaseHandler.getAllPlayers(orav.getId()), middleLocation, radius);
         for (Map.Entry<UUID, Location> entry : startLocation.entrySet()) {
             getConfiguration().set(entry.getKey().toString(), entry.getValue());

@@ -2,6 +2,7 @@ package de.logilutions.orav.command;
 
 import de.logilutions.orav.Orav;
 import de.logilutions.orav.OravPlugin;
+import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.session.SessionObserver;
@@ -26,6 +27,8 @@ public class OravCommand implements CommandExecutor, TabCompleter {
     private final SessionObserver sessionObserver;
     private final OravStart oravStart;
     private final Orav orav;
+    private final DatabaseHandler databaseHandler;
+
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(!(commandSender instanceof Player) || !commandSender.isOp()){
@@ -56,6 +59,15 @@ public class OravCommand implements CommandExecutor, TabCompleter {
                     oravStart.startOrav();
                     messageManager.sendMessage(player,"Orav wurde gestartet!");
                     break;
+                case "preparation":
+                    if(orav.getState() != Orav.State.DEVELOPING){
+                        messageManager.sendMessage(player,"%ec%Orav wurde bereits in die Vorbereitungsphase gesetzt!");
+                        return true;
+                    }
+                    orav.setState(Orav.State.PREPARATION);
+                    databaseHandler.updateOrav(orav);
+                    messageManager.sendMessage(player,"Orav wurde gestartet!");
+                    break;
             }
         }
         return true;
@@ -76,6 +88,7 @@ public class OravCommand implements CommandExecutor, TabCompleter {
         if(strings.length == 1){
             list.add("admin");
             list.add("invalidateSession");
+            list.add("preparation");
             list.add("start");
         }
 

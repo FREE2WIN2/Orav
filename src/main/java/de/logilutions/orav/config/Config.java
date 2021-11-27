@@ -40,4 +40,11 @@ public abstract class Config {
             e.printStackTrace();
         }
     }
+
+    public void clear() {
+        for (String key : getConfiguration().getKeys(false)) {
+            configuration.set(key, null);
+        }
+        save();
+    }
 }

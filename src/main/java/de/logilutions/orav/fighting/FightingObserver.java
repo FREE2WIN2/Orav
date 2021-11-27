@@ -1,5 +1,6 @@
 package de.logilutions.orav.fighting;
 
+import de.logilutions.orav.Orav;
 import de.logilutions.orav.config.PlayerFightLogoutConfig;
 import de.logilutions.orav.config.PlayerLogoutsConfig;
 import de.logilutions.orav.player.OravPlayer;
@@ -31,6 +32,7 @@ public class FightingObserver implements Listener {
     private final OravPlayerManager oravPlayerManager;
     private final MessageManager messageManager;
     private final PlayerFightLogoutConfig playerFightLogoutConfig;
+    private final Orav orav;
     private BukkitTask removeTask;
     private BukkitTask messageTask;
 
@@ -126,6 +128,10 @@ public class FightingObserver implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+        if (orav != null && orav.getState() != Orav.State.RUNNING) {
+            event.setCancelled(true);
+            return;
+        }
         Entity damagedEntity = event.getEntity();
         if (damagedEntity.getType() != EntityType.PLAYER) {
             return;
@@ -153,12 +159,12 @@ public class FightingObserver implements Listener {
             event.setCancelled(true);
             return;
         }
-        if(damagedOravPlayer.isFightProtected()){
+        if (damagedOravPlayer.isFightProtected()) {
             this.messageManager.sendMessage(damagerPlayer, "Dein Opfer ist noch in Schutzzeit!");
             event.setCancelled(true);
             return;
         }
-        if(damagerOravPlayer.isFightProtected()){
+        if (damagerOravPlayer.isFightProtected()) {
             this.messageManager.sendMessage(damagerPlayer, "Du bist noch in Schutzzeit!");
             event.setCancelled(true);
             return;

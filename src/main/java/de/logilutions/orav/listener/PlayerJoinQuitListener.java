@@ -122,7 +122,8 @@ public class PlayerJoinQuitListener implements Listener {
                 null,
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
 
-        if (databaseHandler.getSessions(oravPlayer).size() == 0 && orav.getState() == Orav.State.RUNNING) {
+        if (databaseHandler.getSessions(oravPlayer).size() == 1 && orav.getState() == Orav.State.RUNNING) {
+            System.out.println("start ORav for Player " + player.getName());
             oravStart.startOrav(player, false);
         }
 
