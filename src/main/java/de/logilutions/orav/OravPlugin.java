@@ -91,7 +91,7 @@ public class OravPlugin extends JavaPlugin {
         int y = config.getInt("start-spawn.y");
         int z = config.getInt("start-spawn.z");
         Location middle = new Location(Bukkit.getWorlds().get(0),x,y,z);
-        this.oravStart = new OravStart(new File(getDataFolder(),"oravStartLocations.yml"),orav,middle,new SpawnGenerator(),25,databaseHandler,this,messageManager,oravPlayerManager,sessionObserver);
+        this.oravStart = new OravStart(new File(getDataFolder(),"oravStartLocations.yml"),orav,middle,new SpawnGenerator(),25,databaseHandler,this,messageManager,oravPlayerManager,sessionObserver, discordUtil);
 
         initCommands();
         registerListener();
