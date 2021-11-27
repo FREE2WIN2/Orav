@@ -17,10 +17,11 @@ public class DiscordUtil {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         String date = LocalDateTime.now().format(dateTimeFormatter);
 
+        discordWebhook.setContent(date);
+
         DiscordWebhook.EmbedObject embedObject = new DiscordWebhook.EmbedObject();
         if (title != null) embedObject.setTitle(title);
-        if (description != null) embedObject.setDescription(date + ": " + description);
-        else embedObject.setDescription(date);
+        if (description != null) embedObject.setDescription(description);
         if (image != null) embedObject.setImage(image);
         if (color != null) embedObject.setColor(color);
 
