@@ -125,6 +125,8 @@ public class PlayerJoinQuitListener implements Listener {
         if (databaseHandler.getSessions(oravPlayer).size() == 1 && orav.getState() == Orav.State.RUNNING) {
             System.out.println("start ORav for Player " + player.getName());
             oravStart.startOrav(player, false);
+        } else {
+            oravStart.startProtectionTime(player);
         }
 
 

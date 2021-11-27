@@ -6,7 +6,9 @@ import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.util.Helper;
 import lombok.AllArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,6 +44,11 @@ public class PlayerDeathListener implements Listener {
                 "https://visage.surgeplay.com/full/" + player.getUniqueId(),
                 Color.RED,
                 null, null, null);
+
+        for(Player player1: Bukkit.getOnlinePlayers()){
+            player1.playSound(player1.getLocation(), Sound.ENTITY_WITHER_DEATH,1,1);
+        }
+
     }
 
     @EventHandler

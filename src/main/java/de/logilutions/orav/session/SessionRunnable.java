@@ -80,7 +80,7 @@ public class SessionRunnable implements Runnable {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§7 Verbleibende Spielzeit: §a" + builder.toString()));
         } else {
             StringBuilder builder = new StringBuilder(seconds + " Sekunde");
-            if (minutes > 1) {
+            if (seconds > 1) {
                 builder.append("n");
             }
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§7 Verbleibende Spielzeit: §a" + builder.toString()));
