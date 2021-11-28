@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+
 @RequiredArgsConstructor
 public class Helper {
     private final DatabaseHandler databaseHandler;
@@ -28,8 +30,19 @@ public class Helper {
                 player.setGameMode(GameMode.SPECTATOR);
             } else {
                 player.kickPlayer("Du bist ausgeschieden! Du darfst erst spectaten, wenn dein Teammate getötet wurde!");
+                oravPlayer.setJoined(false);
             }
             return false;
+        }
+        return true;
+    }
+
+    public boolean teamIsDroppedOut(Long teamId) {
+        Collection<OravPlayer> teamPlayers = databaseHandler.getPlayersOfTeam(teamId);
+        for(OravPlayer oravPlayer:teamPlayers){
+            if(!oravPlayer.isDroppedOut()){
+                return false;
+            }
         }
         return true;
     }

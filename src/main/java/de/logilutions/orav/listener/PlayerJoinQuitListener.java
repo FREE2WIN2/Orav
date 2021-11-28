@@ -90,12 +90,12 @@ public class PlayerJoinQuitListener implements Listener {
 
 
         LocalTime now = LocalTime.now();
-        if (orav.getEarlyLogin().isAfter(now) && orav.getLatestLogin().isBefore(now)) {
+        if (!(orav.getEarlyLogin().isBefore(now) && orav.getLatestLogin().isAfter(now))) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             String from = orav.getEarlyLogin().format(formatter);
             String to = orav.getLatestLogin().format(formatter);
             if (!player.isOp()) {
-                player.kickPlayer("§aHeute darf nicht mehr gespielt werden! (Nur von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
+                player.kickPlayer("§aDu versuchst außerhalb der Spielzeiten den Server zu bretreten! (Spielzeit von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
                 oravPlayer.setJoined(false);
             } else {
                 messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
@@ -151,6 +151,7 @@ public class PlayerJoinQuitListener implements Listener {
             if (!player.isOp()) {
                 event.setQuitMessage("");
             }
+            return;
         }
         if(orav.getState() == Orav.State.PREPARATION){
             oravPlayerManager.removePlayer(player.getUniqueId());
@@ -178,6 +179,7 @@ public class PlayerJoinQuitListener implements Listener {
                 "https://visage.surgeplay.com/face/" + player.getUniqueId());
         playerLogoutsConfig.saveLogOutPosition(player.getUniqueId(), player.getLocation());
         oravPlayerManager.removePlayer(oravPlayer.getUuid());
+        event.setQuitMessage(player.getDisplayName() + "§e hat den Server verlassen!");
     }
 
 }

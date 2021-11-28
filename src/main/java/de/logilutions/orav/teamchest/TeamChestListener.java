@@ -4,6 +4,7 @@ import de.logilutions.orav.database.DatabaseHandler;
 import de.logilutions.orav.player.OravPlayer;
 import de.logilutions.orav.player.OravPlayerManager;
 import de.logilutions.orav.team.OravTeam;
+import de.logilutions.orav.util.Helper;
 import de.logilutions.orav.util.MessageManager;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
@@ -26,7 +27,7 @@ public class TeamChestListener implements Listener {
     private final TeamChestManager teamChestManager;
     private final MessageManager messageManager;
     private final DatabaseHandler databaseHandler;
-
+    private final Helper helper;
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         OravPlayer oravPlayer = oravPlayerManager.getPlayer(event.getPlayer().getUniqueId());
@@ -123,6 +124,10 @@ public class TeamChestListener implements Listener {
         if (teamId == null) {
             return true;
         }
+        if(helper.teamIsDroppedOut(teamId)){
+            return true;
+        }
+
         return oravPlayer.getOravTeam().getId().equals(teamId) || oravPlayer.isOravAdmin();
     }
 
@@ -139,7 +144,6 @@ public class TeamChestListener implements Listener {
         }
         Chest chest = (Chest) blockState;
         InventoryHolder inventoryHolder = chest.getInventory().getHolder();
-        System.out.println("block instance of Doublechest? " + (chest.getInventory().getHolder() instanceof DoubleChest));
         if (inventoryHolder instanceof DoubleChest) {
             DoubleChest doubleChest = (DoubleChest) inventoryHolder;
             Chest left = (Chest) doubleChest.getLeftSide();

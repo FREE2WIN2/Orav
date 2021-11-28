@@ -107,7 +107,7 @@ public class OravPlugin extends JavaPlugin {
             pm.registerEvents(new PlayerSessionListener(oravPlayerManager, this.helper), this);
             pm.registerEvents(new PortalListener(oravPlayerManager), this);
             pm.registerEvents(new PlayerChatListener(), this);
-            pm.registerEvents(new TeamChestListener(oravPlayerManager, teamChestManager, messageManager, databaseHandler), this);
+            pm.registerEvents(new TeamChestListener(oravPlayerManager, teamChestManager, messageManager, databaseHandler,helper), this);
             pm.registerEvents(new PreparingListener(orav), this);
 
             fightingObserver.start();
