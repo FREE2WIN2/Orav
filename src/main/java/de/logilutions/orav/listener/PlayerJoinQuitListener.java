@@ -95,7 +95,7 @@ public class PlayerJoinQuitListener implements Listener {
             String from = orav.getEarlyLogin().format(formatter);
             String to = orav.getLatestLogin().format(formatter);
             if (!player.isOp()) {
-                player.kickPlayer("§aDu versuchst außerhalb der Spielzeiten den Server zu bretreten! (Spielzeit von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
+                player.kickPlayer("§aDu versuchst außerhalb der Spielzeiten den Server zu betreten! (Spielzeit von §e" + from + "Uhr §abis §e" + to + "Uhr§a)");
                 oravPlayer.setJoined(false);
             } else {
                 messageManager.sendMessage(player, "KEINE SPIELZEIT! (Nur von " + from + "Uhr bis " + to + "Uhr)");
